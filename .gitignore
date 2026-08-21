@@ -1,0 +1,53 @@
+# Local IDE settings
+/.vscode/
+/.idea/
+/.vs/
+
+# Keil MDK build directories
+/MDK-ARM/modbus-gateway-stm32/
+/MDK-ARM/Objects/
+/MDK-ARM/Listings/
+
+# Keil MDK generated files (scoped to MDK-ARM to avoid hiding release artifacts elsewhere)
+/MDK-ARM/**/*.o
+/MDK-ARM/**/*.obj
+/MDK-ARM/**/*.d
+/MDK-ARM/**/*.crf
+/MDK-ARM/**/*.axf
+/MDK-ARM/**/*.elf
+/MDK-ARM/**/*.hex
+/MDK-ARM/**/*.bin
+/MDK-ARM/**/*.map
+/MDK-ARM/**/*.lst
+/MDK-ARM/**/*.lnp
+/MDK-ARM/**/*.dep
+/MDK-ARM/**/*.iex
+/MDK-ARM/**/*.build_log.htm
+
+# Keil uVision per-user state
+/MDK-ARM/*.uvguix
+/MDK-ARM/*.uvguix.*
+/MDK-ARM/*.uvgui
+/MDK-ARM/*.uvgui.*
+/MDK-ARM/**/JLinkLog.txt
+/MDK-ARM/**/JLinkSettings.ini
+
+# Editor and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# Operating system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 个人文件
+todo.txt
+lwip_configuration.md

@@ -1,0 +1,1 @@
+基于STM32平台，支持Modbus RTU与Modbus TCP协议转换，并可按配置采集数据并上报至MQTT服务器。目前处于开发阶段。
