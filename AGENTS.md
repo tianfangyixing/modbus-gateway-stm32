@@ -11,38 +11,51 @@
 ```text
 .
 ├── Core/
-│   ├── Inc/                         # STM32、FreeRTOS 及外设配置头文件
-│   └── Src/                         # 程序入口、外设初始化、中断和 RTOS 任务
+│   ├── Inc/                         # STM32、FreeRTOS、外设配置及应用层公共头文件
+│   └── Src/                         # 系统启动、外设、中断、RTOS 任务及网关集成代码
 ├── Modbus/
 │   ├── include/                     # Modbus 模块公共类型及 API
-│   └── src/                         # RTU、ADU 池、事务调度器和 TCP 服务器实现
+│   └── src/                         # RTU、RS485 端口、ADU 池、事务调度器和 TCP 服务器
+├── SNTP/
+│   ├── include/                     # SNTP 校时服务公共接口
+│   └── src/                         # LwIP SNTP、RTC 写入及同步状态实现
 ├── Spec/
 │   └── modbus/                      # Modbus 模块的 API 与行为规范
+├── Scripts/
+│   └── modbus_tcp_reader/           # 主机侧 Modbus TCP 轮询与联调工具
 ├── LWIP/
 │   ├── App/                         # LwIP 初始化和应用层集成
 │   └── Target/                      # 以太网接口及 LwIP 配置
+├── USB_DEVICE/
+│   ├── App/                         # USB Device 初始化、描述符及 CDC 接口
+│   └── Target/                      # USB Device HAL 底层适配与配置
 ├── Drivers/
 │   ├── CMSIS/                       # ARM CMSIS 与 STM32F4 设备支持
 │   ├── STM32F4xx_HAL_Driver/        # STM32F4 HAL 驱动
 │   └── BSP/Components/lan8742/      # LAN8742 以太网 PHY 驱动
 ├── Middlewares/
+│   ├── ST/STM32_USB_Device_Library/ # ST USB Device 核心库及 CDC 类实现
 │   └── Third_Party/
 │       ├── FreeRTOS/                # FreeRTOS 内核及 CMSIS-RTOS2 适配层
-│       └── LwIP/                    # LwIP 协议栈源码
+│       └── LwIP/                    # LwIP 协议栈及应用层源码
 ├── MDK-ARM/                         # Keil MDK 工程、启动文件及调试配置
 ├── modbus-gateway-stm32.ioc         # STM32CubeMX 工程配置
 ├── .mxproject                       # STM32CubeMX 工程元数据
+├── README.md                         # 项目简介
 └── todo.txt                         # 待办事项
 ```
 
 主要入口与修改边界：
 
-- `Core/Src/main.c`：系统启动、时钟和外设初始化入口。
-- `Core/Src/freertos.c`：RTOS 对象创建、LwIP 初始化及应用任务入口。
+- `Core/Src/main.c`：系统启动、时钟、RTC 和其他外设的初始化入口。
+- `Core/Src/freertos.c`：RTOS 对象创建以及 USB Device、LwIP、SNTP 和网关应用的初始化入口。
+- `Core/Src/modbus_gateway_app.c`：组装并启动 RS485 端口、RTU 事务调度器与 Modbus TCP 服务器。
 - `Modbus/`：项目自有的核心协议与网关业务代码；公共接口放在 `include/`，实现放在 `src/`。
 - 修改 `Modbus/` 前应检查 `Spec/modbus/` 中对应规范，并保持接口、返回值和资源所有权约定一致。
+- `SNTP/`：项目自有的网络应用模块；修改时应同步检查 LwIP 配置及网络就绪时序。
+- `USB_DEVICE/` 由 CubeMX 生成，`Middlewares/ST/STM32_USB_Device_Library/` 为厂商中间件；USB CDC 同时被调试日志使用。
 - `Drivers/` 和 `Middlewares/Third_Party/` 主要是厂商或第三方代码，除非确有必要，不应直接修改。
-- `Core/`、`LWIP/` 等 CubeMX 生成文件中的自定义代码，应尽量放在 `USER CODE BEGIN` 与 `USER CODE END` 区域内，避免重新生成工程时丢失。
+- `Core/`、`LWIP/`、`USB_DEVICE/` 等 CubeMX 生成文件中的自定义代码，应尽量放在 `USER CODE BEGIN` 与 `USER CODE END` 区域内，避免重新生成工程时丢失。
 - 硬件、引脚、时钟或外设配置变更应同步维护 `modbus-gateway-stm32.ioc`。
 
 ## C 代码规范

@@ -31,6 +31,11 @@
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
 
+#include "sntp_service.h"
+
+#define SNTP_SERVER_DNS 1
+#define SNTP_SET_SYSTEM_TIME(seconds) sntp_service_set_time(seconds)
+#define SNTP_GET_SYSTEM_TIME(seconds, microseconds) sntp_service_get_time(&(seconds), &(microseconds))
 /* USER CODE END 0 */
 
 #ifdef __cplusplus
@@ -103,6 +108,12 @@
 #define LWIP_TCP_KEEPALIVE 1
 /*----- Value in opt.h for RECV_BUFSIZE_DEFAULT: INT_MAX -----*/
 #define RECV_BUFSIZE_DEFAULT 2000000000
+/*----- Default Value for LWIP_SNTP: 0 ---*/
+#define LWIP_SNTP 1
+/*----- Default Value for SNTP_MAX_SERVERS: 1 ---*/
+#define SNTP_MAX_SERVERS 2
+/*----- Default Value for SNTP_CHECK_RESPONSE: 0 ---*/
+#define SNTP_CHECK_RESPONSE 2
 /*----- Value in opt.h for LWIP_STATS: 1 -----*/
 #define LWIP_STATS 0
 /*----- Value in opt.h for CHECKSUM_GEN_IP: 1 -----*/
@@ -125,6 +136,8 @@
 #define CHECKSUM_CHECK_ICMP 0
 /*----- Value in opt.h for CHECKSUM_CHECK_ICMP6: 1 -----*/
 #define CHECKSUM_CHECK_ICMP6 0
+/*----- Default Value for LWIP_DBG_TYPES_ON: LWIP_DBG_ON ---*/
+#define LWIP_DBG_TYPES_ON LWIP_DBG_OFF
 /*-----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
 

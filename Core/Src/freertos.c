@@ -27,11 +27,13 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 
+#include "debug_log.h"
 #include "lwip/apps/lwiperf.h"
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
 #include "modbus_gateway_app.h"
+#include "sntp_service.h"
 
 /* USER CODE END Includes */
 
@@ -136,11 +138,23 @@ void StartDefaultTask(void *argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
 
+  debug_log_init();
+  
+  sntp_service_init();
   modbus_gateway_app_init();
-
   while (1)
   {
-    vTaskSuspend(NULL);
+    if(sntp_service_is_synchronized())
+    {
+      uint32_t unix_seconds, microseconds;
+      sntp_service_get_time(&unix_seconds, &microseconds);
+      debug_log("%lu, %lu\r\n", unix_seconds, microseconds);
+    } 
+    else
+    {
+      debug_log("not synchronized\r\n");
+    }
+    vTaskDelay(500);
   }
   /* USER CODE END StartDefaultTask */
 }

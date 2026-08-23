@@ -109,7 +109,15 @@ void MX_LWIP_Init(void)
 /* USER CODE END H7_OS_THREAD_NEW_CMSIS_RTOS_V2 */
 
 /* USER CODE BEGIN 3 */
+  ip_addr_t dns_server1;
+  ip_addr_t dns_server2;
 
+  LOCK_TCPIP_CORE();
+  IP_ADDR4(&dns_server1, 223, 5, 5, 5);
+  IP_ADDR4(&dns_server2, 223, 6, 6, 6);
+  dns_setserver(0, &dns_server1);
+  dns_setserver(1, &dns_server2);
+  UNLOCK_TCPIP_CORE();
 /* USER CODE END 3 */
 }
 
