@@ -32,9 +32,11 @@
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/entropy_poll.h"
 #include "modbus_gateway_app.h"
+#include "mqtt_publisher.h"
 #include "sntp_service.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -131,39 +133,34 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-  /* init code for LWIP */
-  MX_LWIP_Init();
-
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
 
-  debug_log_init();
-  
+  debug_log_printf("[boot] default task started\r\n");
+  /* The altcp TLS path does not call mbedtls_net_init(), so initialize LwIP explicitly. */
+  debug_log_printf("[boot] initializing LwIP\r\n");
+  MX_LWIP_Init();
+  debug_log_printf("[boot] LwIP ready\r\n");
   sntp_service_init();
+  debug_log_printf("[boot] SNTP service ready\r\n");
   modbus_gateway_app_init();
+  debug_log_printf("[boot] Modbus gateway ready\r\n");
+
+  mqtt_example_init();
+  debug_log_printf("[boot] MQTT publisher ready\r\n");
+
   while (1)
   {
-    if(sntp_service_is_synchronized())
-    {
-      uint32_t unix_seconds, microseconds;
-      sntp_service_get_time(&unix_seconds, &microseconds);
-      debug_log("%lu, %lu\r\n", unix_seconds, microseconds);
-    } 
-    else
-    {
-      debug_log("not synchronized\r\n");
-    }
-    vTaskDelay(500);
+
+    vTaskDelay(pdMS_TO_TICKS(1000U));
   }
+
   /* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
-
-
 
 /* USER CODE END Application */
 

@@ -20,7 +20,8 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "dma.h"
-#include "lwip.h"
+#include "mbedtls.h"
+#include "rng.h"
 #include "rtc.h"
 #include "tim.h"
 #include "usart.h"
@@ -29,7 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "debug_log.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -82,14 +83,15 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  debug_log_init();
+  debug_log_printf("\r\n[boot] reset complete, RTT initialized\r\n");
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  debug_log_printf("[boot] system clock configured\r\n");
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -98,7 +100,11 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM7_Init();
   MX_RTC_Init();
+  MX_RNG_Init();
+  /* Call PreOsInit function */
+  MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */
+  debug_log_printf("[boot] peripherals initialized\r\n");
   HAL_GPIO_WritePin(ETH_NRST_GPIO_Port, ETH_NRST_Pin, GPIO_PIN_RESET);
   HAL_Delay(100);
   HAL_GPIO_WritePin(ETH_NRST_GPIO_Port, ETH_NRST_Pin, GPIO_PIN_SET);
@@ -118,7 +124,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -143,9 +148,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -206,6 +211,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+  debug_log_printf("[fatal] Error_Handler\r\n");
   __disable_irq();
   while (1)
   {

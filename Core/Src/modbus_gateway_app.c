@@ -10,6 +10,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
+#include "memory_sections.h"
 
 #include <stdint.h>
 
@@ -26,9 +27,9 @@ static modbus_rtu_channel_t modbus_gateway_rtu_channel;
 static modbus_rtu_transaction_scheduler_t modbus_gateway_scheduler;
 static modbus_tcp_server_t modbus_gateway_tcp_server;
 
-static StackType_t modbus_gateway_scheduler_task_stack[MODBUS_GATEWAY_SCHEDULER_TASK_STACK_DEPTH];
+static CCM_SRAM_ALIGNED(8) StackType_t modbus_gateway_scheduler_task_stack[MODBUS_GATEWAY_SCHEDULER_TASK_STACK_DEPTH];
 static StaticTask_t modbus_gateway_scheduler_task_buffer;
-static StackType_t modbus_gateway_tcp_task_stack[MODBUS_GATEWAY_TCP_TASK_STACK_DEPTH];
+static CCM_SRAM_ALIGNED(8) StackType_t modbus_gateway_tcp_task_stack[MODBUS_GATEWAY_TCP_TASK_STACK_DEPTH];
 static StaticTask_t modbus_gateway_tcp_task_buffer;
 
 static StaticQueue_t modbus_gateway_low_request_queue_buffer;

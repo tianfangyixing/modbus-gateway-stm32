@@ -45,8 +45,6 @@ modbus_rtu_adu_t *modbus_rtu_adu_pool_allocate(void)
 
 void modbus_rtu_adu_pool_release(modbus_rtu_adu_t *adu)
 {
-    bool valid_release = false;
- 
     xSemaphoreTake(pool_mutex, portMAX_DELAY);
     
     size_t index = (size_t)(adu - pool_adus);

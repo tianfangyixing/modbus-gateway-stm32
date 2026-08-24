@@ -32,6 +32,9 @@
 /MDK-ARM/**/JLinkLog.txt
 /MDK-ARM/**/JLinkSettings.ini
 
+# Python cache directories
+__pycache__/
+
 # Editor and temporary files
 *.log
 *.tmp

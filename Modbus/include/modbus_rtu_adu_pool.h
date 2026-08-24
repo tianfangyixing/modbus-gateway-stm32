@@ -3,7 +3,7 @@
 
 #include "modbus_rtu.h"
 
-#define MODBUS_RTU_ADU_POOL_CAPACITY 16U
+#define MODBUS_RTU_ADU_POOL_CAPACITY 6U
 
 void modbus_rtu_adu_pool_init(void);
 modbus_rtu_adu_t *modbus_rtu_adu_pool_allocate(void);

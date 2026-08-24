@@ -36,6 +36,17 @@
 #define SNTP_SERVER_DNS 1
 #define SNTP_SET_SYSTEM_TIME(seconds) sntp_service_set_time(seconds)
 #define SNTP_GET_SYSTEM_TIME(seconds, microseconds) sntp_service_get_time(&(seconds), &(microseconds))
+
+#define LWIP_ALTCP_TLS_MBEDTLS 1
+
+#define LWIP_DEBUG 1
+
+#define MQTT_DEBUG LWIP_DBG_OFF
+#define ALTCP_MBEDTLS_DEBUG LWIP_DBG_ON
+#define ALTCP_MBEDTLS_MEM_DEBUG LWIP_DBG_ON
+
+#define ALTCP_MBEDTLS_RNG_FN mbedtls_entropy_func
+
 /* USER CODE END 0 */
 
 #ifdef __cplusplus
@@ -46,13 +57,15 @@
 /* Parameters set in STM32CubeMX LwIP Configuration GUI -*/
 /*----- WITH_RTOS enabled (Since FREERTOS is set) -----*/
 #define WITH_RTOS 1
+/*----- WITH_MBEDTLS enabled (Since MBEDTLS and FREERTOS are set) -----*/
+#define WITH_MBEDTLS 1
 /*----- CHECKSUM_BY_HARDWARE enabled -----*/
 #define CHECKSUM_BY_HARDWARE 1
 /*-----------------------------------------------------------------------------*/
 
 /* LwIP Stack Parameters (modified compared to initialization value in opt.h) -*/
 /* Parameters set in STM32CubeMX LwIP Configuration GUI -*/
-/*----- Default Value for LWIP_DNS: 0 ---*/
+/*----- Value in opt.h for LWIP_DNS: 0 -----*/
 #define LWIP_DNS 1
 /*----- Default Value for MEMP_NUM_UDP_PCB: 4 ---*/
 #define MEMP_NUM_UDP_PCB 6
@@ -61,11 +74,13 @@
 /*----- Value in opt.h for MEM_ALIGNMENT: 1 -----*/
 #define MEM_ALIGNMENT 4
 /*----- Default Value for MEM_SIZE: 1600 ---*/
-#define MEM_SIZE 1024*20
+#define MEM_SIZE 1024*40
 /*----- Default Value for MEMP_NUM_PBUF: 16 ---*/
 #define MEMP_NUM_PBUF 30
 /*----- Default Value for MEMP_NUM_TCP_SEG: 16 ---*/
 #define MEMP_NUM_TCP_SEG 40
+/*----- Default Value for MEMP_NUM_SYS_TIMEOUT: 4 ---*/
+#define MEMP_NUM_SYS_TIMEOUT 10
 /*----- Default Value for MEMP_NUM_NETCONN: 4 ---*/
 #define MEMP_NUM_NETCONN 8
 /*----- Default Value for PBUF_POOL_BUFSIZE: 592 ---*/
@@ -74,6 +89,8 @@
 #define LWIP_ETHERNET 1
 /*----- Value in opt.h for LWIP_DNS_SECURE: (LWIP_DNS_SECURE_RAND_XID | LWIP_DNS_SECURE_NO_MULTIPLE_OUTSTANDING | LWIP_DNS_SECURE_RAND_SRC_PORT) -*/
 #define LWIP_DNS_SECURE 7
+/*----- Default Value for TCP_WND: 5840 ---*/
+#define TCP_WND 7300
 /*----- Default Value for TCP_MSS: 536 ---*/
 #define TCP_MSS 1460
 /*----- Default Value for TCP_SND_BUF: 2920 ---*/
@@ -82,10 +99,14 @@
 #define TCP_SND_QUEUELEN 40
 /*----- Default Value for TCP_LISTEN_BACKLOG: 0 ---*/
 #define TCP_LISTEN_BACKLOG 1
+/*----- Default Value for LWIP_ALTCP: 0 ---*/
+#define LWIP_ALTCP 1
+/*----- Default Value for LWIP_ALTCP_TLS: 0 ---*/
+#define LWIP_ALTCP_TLS 1
 /*----- Value in opt.h for LWIP_NETIF_LINK_CALLBACK: 0 -----*/
 #define LWIP_NETIF_LINK_CALLBACK 1
 /*----- Value in opt.h for TCPIP_THREAD_STACKSIZE: 0 -----*/
-#define TCPIP_THREAD_STACKSIZE 2048
+#define TCPIP_THREAD_STACKSIZE 3072
 /*----- Value in opt.h for TCPIP_THREAD_PRIO: 1 -----*/
 #define TCPIP_THREAD_PRIO 24
 /*----- Value in opt.h for TCPIP_MBOX_SIZE: 0 -----*/
@@ -108,6 +129,8 @@
 #define LWIP_TCP_KEEPALIVE 1
 /*----- Value in opt.h for RECV_BUFSIZE_DEFAULT: INT_MAX -----*/
 #define RECV_BUFSIZE_DEFAULT 2000000000
+/*----- Value in opt.h for LWIP_USE_EXTERNAL_MBEDTLS: 0 -----*/
+#define LWIP_USE_EXTERNAL_MBEDTLS 1
 /*----- Default Value for LWIP_SNTP: 0 ---*/
 #define LWIP_SNTP 1
 /*----- Default Value for SNTP_MAX_SERVERS: 1 ---*/
@@ -136,8 +159,10 @@
 #define CHECKSUM_CHECK_ICMP 0
 /*----- Value in opt.h for CHECKSUM_CHECK_ICMP6: 1 -----*/
 #define CHECKSUM_CHECK_ICMP6 0
-/*----- Default Value for LWIP_DBG_TYPES_ON: LWIP_DBG_ON ---*/
-#define LWIP_DBG_TYPES_ON LWIP_DBG_OFF
+/*----- Default Value for MEM_DEBUG: LWIP_DBG_OFF ---*/
+#define MEM_DEBUG LWIP_DBG_ON
+/*----- Default Value for TCP_DEBUG: LWIP_DBG_OFF ---*/
+#define TCP_DEBUG LWIP_DBG_ON
 /*-----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
 

@@ -30,6 +30,8 @@
 
 /* USER CODE BEGIN 0 */
 
+#include "lwip/dns.h"
+
 /* USER CODE END 0 */
 /* Private function prototypes -----------------------------------------------*/
 static void ethernet_link_status_updated(struct netif *netif);
@@ -111,10 +113,10 @@ void MX_LWIP_Init(void)
 /* USER CODE BEGIN 3 */
   ip_addr_t dns_server1;
   ip_addr_t dns_server2;
-
-  LOCK_TCPIP_CORE();
   IP_ADDR4(&dns_server1, 223, 5, 5, 5);
   IP_ADDR4(&dns_server2, 223, 6, 6, 6);
+
+  LOCK_TCPIP_CORE();
   dns_setserver(0, &dns_server1);
   dns_setserver(1, &dns_server2);
   UNLOCK_TCPIP_CORE();
