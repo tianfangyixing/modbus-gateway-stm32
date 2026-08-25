@@ -22,7 +22,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "mbedtls.h"
 
-
 /* USER CODE BEGIN 0 */
 #include "platform_utils.h"
 /* USER CODE END 0 */

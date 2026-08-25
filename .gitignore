@@ -2,6 +2,7 @@
 /.vscode/
 /.idea/
 /.vs/
+/.agents/
 
 # Keil MDK build directories
 /MDK-ARM/modbus-gateway-stm32/

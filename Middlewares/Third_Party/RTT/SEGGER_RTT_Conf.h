@@ -33,6 +33,7 @@ Purpose : User configuration file for RTT.
 #define SEGGER_RTT_MAX_NUM_UP_BUFFERS (1)
 #define SEGGER_RTT_MAX_NUM_DOWN_BUFFERS (1)
 #define SEGGER_RTT_PRINTF_BUFFER_SIZE (128)
+  #define BUFFER_SIZE_UP                            (4096)
 #define SEGGER_RTT_MAX_INTERRUPT_PRIORITY configMAX_SYSCALL_INTERRUPT_PRIORITY
 
 #endif

@@ -23,6 +23,7 @@
 #include "mbedtls.h"
 #include "rng.h"
 #include "rtc.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
@@ -101,6 +102,7 @@ int main(void)
   MX_TIM7_Init();
   MX_RTC_Init();
   MX_RNG_Init();
+  MX_SPI1_Init();
   /* Call PreOsInit function */
   MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */

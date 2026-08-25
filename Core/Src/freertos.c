@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 #include "debug_log.h"
+#include "external_flash.h"
 #include "lwip/apps/lwiperf.h"
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
@@ -138,6 +139,18 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN StartDefaultTask */
 
   debug_log_printf("[boot] default task started\r\n");
+  debug_log_printf("[boot] initializing external flash\r\n");
+  external_flash_result_t flash_result = external_flash_init();
+  if (flash_result == EXTERNAL_FLASH_RESULT_OK)
+  {
+    debug_log_printf("[boot] external flash ready\r\n");
+  }
+  else
+  {
+    debug_log_printf("[flash-test] FAIL: initialization, result=%d\r\n", (int)flash_result);
+    debug_log_printf("[boot] external flash initialization failed, continuing startup\r\n");
+  }
+
   /* The altcp TLS path does not call mbedtls_net_init(), so initialize LwIP explicitly. */
   debug_log_printf("[boot] initializing LwIP\r\n");
   MX_LWIP_Init();

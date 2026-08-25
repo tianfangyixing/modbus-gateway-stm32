@@ -59,6 +59,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define ETH_NRST_Pin GPIO_PIN_2
 #define ETH_NRST_GPIO_Port GPIOE
+#define W25_CS_Pin GPIO_PIN_8
+#define W25_CS_GPIO_Port GPIOG
 
 /* USER CODE BEGIN Private defines */
 
