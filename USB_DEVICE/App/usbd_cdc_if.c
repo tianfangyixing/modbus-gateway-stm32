@@ -23,6 +23,8 @@
 
 /* USER CODE BEGIN INCLUDE */
 
+#include "management_transport.h"
+
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -130,6 +132,9 @@ static int8_t CDC_TransmitCplt_HS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
 
+static int8_t CDC_TransmitCplt_HS(uint8_t *Buf, uint32_t *Len, uint8_t epnum);
+static management_transport_cdc_result_t management_transport_map_cdc_result(uint8_t result);
+
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -154,9 +159,24 @@ USBD_CDC_ItfTypeDef USBD_Interface_fops_HS =
 static int8_t CDC_Init_HS(void)
 {
   /* USER CODE BEGIN 8 */
+  management_transport_result_t management_result;
+  uint8_t rx_result;
+  uint8_t tx_result;
+
   /* Set Application Buffers */
-  USBD_CDC_SetTxBuffer(&hUsbDeviceHS, UserTxBufferHS, 0);
-  USBD_CDC_SetRxBuffer(&hUsbDeviceHS, UserRxBufferHS);
+  tx_result = USBD_CDC_SetTxBuffer(&hUsbDeviceHS, UserTxBufferHS, 0U);
+  rx_result = USBD_CDC_SetRxBuffer(&hUsbDeviceHS, UserRxBufferHS);
+  if (tx_result != USBD_OK || rx_result != USBD_OK)
+  {
+    return (USBD_FAIL);
+  }
+
+  management_result = management_transport_session_open_from_isr();
+  if (management_result != MANAGEMENT_TRANSPORT_OK)
+  {
+    return (USBD_FAIL);
+  }
+
   return (USBD_OK);
   /* USER CODE END 8 */
 }
@@ -169,6 +189,11 @@ static int8_t CDC_Init_HS(void)
 static int8_t CDC_DeInit_HS(void)
 {
   /* USER CODE BEGIN 9 */
+  if (management_transport_session_close_from_isr() != MANAGEMENT_TRANSPORT_OK)
+  {
+    return (USBD_FAIL);
+  }
+
   return (USBD_OK);
   /* USER CODE END 9 */
 }
@@ -183,6 +208,11 @@ static int8_t CDC_DeInit_HS(void)
 static int8_t CDC_Control_HS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 {
   /* USER CODE BEGIN 10 */
+  if (pbuf == NULL && length != 0U)
+  {
+    return (USBD_FAIL);
+  }
+
   switch(cmd)
   {
   case CDC_SEND_ENCAPSULATED_COMMAND:
@@ -264,8 +294,15 @@ static int8_t CDC_Control_HS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_HS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 11 */
-  USBD_CDC_SetRxBuffer(&hUsbDeviceHS, &Buf[0]);
-  USBD_CDC_ReceivePacket(&hUsbDeviceHS);
+  if (Len == NULL || (Buf == NULL && *Len != 0U))
+  {
+    return (USBD_FAIL);
+  }
+  if (management_transport_receive_from_isr(Buf, *Len) != MANAGEMENT_TRANSPORT_OK)
+  {
+    return (USBD_FAIL);
+  }
+
   return (USBD_OK);
   /* USER CODE END 11 */
 }
@@ -282,10 +319,21 @@ uint8_t CDC_Transmit_HS(uint8_t* Buf, uint16_t Len)
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 12 */
   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceHS.pClassData;
-  if (hcdc->TxState != 0){
+
+  if (hcdc == NULL || (Buf == NULL && Len != 0U))
+  {
+    return USBD_FAIL;
+  }
+  if (hcdc->TxState != 0U)
+  {
     return USBD_BUSY;
   }
-  USBD_CDC_SetTxBuffer(&hUsbDeviceHS, Buf, Len);
+
+  result = USBD_CDC_SetTxBuffer(&hUsbDeviceHS, Buf, Len);
+  if (result != USBD_OK)
+  {
+    return result;
+  }
   result = USBD_CDC_TransmitPacket(&hUsbDeviceHS);
   /* USER CODE END 12 */
   return result;
@@ -307,14 +355,54 @@ static int8_t CDC_TransmitCplt_HS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 {
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 14 */
-  UNUSED(Buf);
-  UNUSED(Len);
-  UNUSED(epnum);
+  if (Len == NULL)
+  {
+    return (USBD_FAIL);
+  }
+  if (management_transport_transmit_complete_from_isr(Buf, *Len, epnum) != MANAGEMENT_TRANSPORT_OK)
+  {
+    return (USBD_FAIL);
+  }
   /* USER CODE END 14 */
   return result;
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+
+static management_transport_cdc_result_t management_transport_map_cdc_result(uint8_t result)
+{
+  if (result == USBD_OK)
+  {
+    return MANAGEMENT_TRANSPORT_CDC_OK;
+  }
+  if (result == USBD_BUSY)
+  {
+    return MANAGEMENT_TRANSPORT_CDC_BUSY;
+  }
+  return MANAGEMENT_TRANSPORT_CDC_FAILED;
+}
+
+management_transport_cdc_result_t management_transport_cdc_enable_receive(void)
+{
+  uint8_t result = USBD_CDC_SetRxBuffer(&hUsbDeviceHS, UserRxBufferHS);
+
+  if (result != USBD_OK)
+  {
+    return management_transport_map_cdc_result(result);
+  }
+
+  return management_transport_map_cdc_result(USBD_CDC_ReceivePacket(&hUsbDeviceHS));
+}
+
+management_transport_cdc_result_t management_transport_cdc_send(uint8_t *data, uint16_t length)
+{
+  if (data == NULL || length == 0U)
+  {
+    return MANAGEMENT_TRANSPORT_CDC_FAILED;
+  }
+
+  return management_transport_map_cdc_result(CDC_Transmit_HS(data, length));
+}
 
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 

@@ -58,6 +58,7 @@ static struct altcp_tls_config *mqtt_tls_config;
 static volatile int32_t mqtt_last_connection_status = MQTT_CONNECTION_STATUS_PENDING;
 static volatile BaseType_t mqtt_publish_in_flight;
 static volatile err_t mqtt_publish_completion_result = ERR_CONN;
+static volatile mqtt_publisher_state_t mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISABLED;
 
 static const mqtt_publisher_message_t mqtt_publisher_messages[] =
 {
@@ -160,6 +161,8 @@ static void mqtt_wait_for_prerequisites(void)
             debug_log_printf("MQTT prerequisites ready\n");
             return;
         }
+
+        mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
 
         if (status != previous_status ||
             current_tick - previous_log_tick >= pdMS_TO_TICKS(MQTT_PREREQUISITE_LOG_INTERVAL_MS))
@@ -283,6 +286,8 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
     const struct mqtt_connect_client_info_t *client_info = (const struct mqtt_connect_client_info_t *)arg;
 
     mqtt_last_connection_status = (int32_t)status;
+    mqtt_publisher_state = status == MQTT_CONNECT_ACCEPTED ? MQTT_PUBLISHER_STATE_CONNECTED
+                                                           : MQTT_PUBLISHER_STATE_ERROR;
     debug_log_printf("MQTT client \"%s\" connection status: %d\n", client_info->client_id, (int)status);
 
     if (status != MQTT_CONNECT_ACCEPTED)
@@ -353,15 +358,18 @@ static void mqtt_connection_task(void *argument)
         int32_t connection_status;
 
         mqtt_wait_for_prerequisites();
+        mqtt_publisher_state = MQTT_PUBLISHER_STATE_CONNECTING;
 
         if (mqtt_ensure_tls_config() == pdFALSE)
         {
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
             mqtt_delay_before_reconnect(&reconnect_delay_ms);
             continue;
         }
 
         if (mqtt_resolve_host(&mqtt_ip) != ERR_OK)
         {
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
             mqtt_delay_before_reconnect(&reconnect_delay_ms);
             continue;
         }
@@ -374,6 +382,7 @@ static void mqtt_connection_task(void *argument)
         connect_result = mqtt_start_connection(&mqtt_ip);
         if (connect_result != ERR_OK)
         {
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
             debug_log_printf("MQTT connect request failed: err %d\n", (int)connect_result);
             mqtt_cleanup_client();
             mqtt_delay_before_reconnect(&reconnect_delay_ms);
@@ -382,6 +391,7 @@ static void mqtt_connection_task(void *argument)
 
         if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(MQTT_CONNECT_TIMEOUT_MS)) == 0U)
         {
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
             debug_log_printf("MQTT TCP/TLS connect timed out after %lu ms\n", (unsigned long)MQTT_CONNECT_TIMEOUT_MS);
             mqtt_cleanup_client();
             mqtt_delay_before_reconnect(&reconnect_delay_ms);
@@ -391,6 +401,7 @@ static void mqtt_connection_task(void *argument)
         connection_status = mqtt_last_connection_status;
         if (connection_status != MQTT_CONNECT_ACCEPTED || mqtt_client_is_connected_safe() == pdFALSE)
         {
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
             debug_log_printf("MQTT connection attempt failed: status %ld\n", (long)connection_status);
             mqtt_cleanup_client();
             mqtt_delay_before_reconnect(&reconnect_delay_ms);
@@ -398,6 +409,7 @@ static void mqtt_connection_task(void *argument)
         }
 
         debug_log_printf("MQTT connection established\n");
+        mqtt_publisher_state = MQTT_PUBLISHER_STATE_CONNECTED;
         reconnect_delay_ms = MQTT_RECONNECT_DELAY_MIN_MS;
 
         while (mqtt_network_is_ready() != pdFALSE && mqtt_client_is_connected_safe() != pdFALSE)
@@ -411,10 +423,12 @@ static void mqtt_connection_task(void *argument)
 
         if (mqtt_network_is_ready() == pdFALSE)
         {
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
             debug_log_printf("MQTT network link unavailable\n");
         }
         else
         {
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
             debug_log_printf("MQTT connection lost: status %ld\n", (long)mqtt_last_connection_status);
         }
 
@@ -431,11 +445,13 @@ void mqtt_example_init(void)
         return;
     }
 
+    mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
     mqtt_publisher_task_handle = xTaskCreateStatic(mqtt_publisher_task, "mqtt_pub", MQTT_PUBLISHER_TASK_STACK_DEPTH,
                                                     NULL, MQTT_PUBLISHER_TASK_PRIORITY, mqtt_publisher_task_stack,
                                                     &mqtt_publisher_task_buffer);
     if (mqtt_publisher_task_handle == NULL)
     {
+        mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
         debug_log_printf("MQTT publisher task creation failed\n");
         return;
     }
@@ -445,11 +461,17 @@ void mqtt_example_init(void)
                                                      &mqtt_connection_task_buffer);
     if (mqtt_connection_task_handle == NULL)
     {
+        mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
         debug_log_printf("MQTT connection task creation failed\n");
         return;
     }
 
     debug_log_printf("MQTT tasks started\n");
+}
+
+mqtt_publisher_state_t mqtt_publisher_get_state(void)
+{
+    return mqtt_publisher_state;
 }
 
 static void mqtt_publisher_task(void *argument)

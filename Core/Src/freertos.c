@@ -27,7 +27,9 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 
+#include "altcp_tls_mbedtls_mem.h"
 #include "debug_log.h"
+#include "configuration_service.h"
 #include "external_flash.h"
 #include "lwip/apps/lwiperf.h"
 #include "lwip/ip_addr.h"
@@ -35,6 +37,7 @@
 #include "lwip/tcpip.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/entropy_poll.h"
+#include "management_transport.h"
 #include "modbus_gateway_app.h"
 #include "mqtt_publisher.h"
 #include "sntp_service.h"
@@ -58,6 +61,9 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+
+static management_transport_result_t management_initialization_result = MANAGEMENT_TRANSPORT_NOT_INITIALIZED;
+static volatile bool management_configuration_ready;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -92,6 +98,8 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
+
+  management_initialization_result = management_transport_init();
 
   /* USER CODE END Init */
 
@@ -139,6 +147,15 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN StartDefaultTask */
 
   debug_log_printf("[boot] default task started\r\n");
+  if (management_initialization_result == MANAGEMENT_TRANSPORT_OK)
+  {
+    debug_log_printf("[boot] Management task ready\r\n");
+  }
+  else
+  {
+    debug_log_printf("[boot] Management task initialization failed, result=%d\r\n",
+                     (int)management_initialization_result);
+  }
   debug_log_printf("[boot] initializing external flash\r\n");
   external_flash_result_t flash_result = external_flash_init();
   if (flash_result == EXTERNAL_FLASH_RESULT_OK)
@@ -155,6 +172,27 @@ void StartDefaultTask(void *argument)
   debug_log_printf("[boot] initializing LwIP\r\n");
   MX_LWIP_Init();
   debug_log_printf("[boot] LwIP ready\r\n");
+  /* Configuration validation can use mbedTLS before MQTT creates its first ALTCP TLS configuration. */
+  altcp_mbedtls_mem_init();
+  if (flash_result == EXTERNAL_FLASH_RESULT_OK)
+  {
+    configuration_service_result_t configuration_result = configuration_service_init();
+
+    if (configuration_result == CONFIGURATION_SERVICE_OK)
+    {
+      management_configuration_ready = true;
+      debug_log_printf("[boot] Configuration Service ready\r\n");
+    }
+    else
+    {
+      debug_log_printf("[boot] Configuration Service initialization failed, result=%d\r\n",
+                       (int)configuration_result);
+    }
+  }
+  else
+  {
+    debug_log_printf("[boot] Configuration Service skipped because External Flash is unavailable\r\n");
+  }
   sntp_service_init();
   debug_log_printf("[boot] SNTP service ready\r\n");
   modbus_gateway_app_init();
@@ -162,6 +200,21 @@ void StartDefaultTask(void *argument)
 
   mqtt_example_init();
   debug_log_printf("[boot] MQTT publisher ready\r\n");
+
+  if (management_initialization_result == MANAGEMENT_TRANSPORT_OK)
+  {
+    management_transport_result_t management_activation_result = management_transport_activate();
+
+    if (management_activation_result == MANAGEMENT_TRANSPORT_OK)
+    {
+      debug_log_printf("[boot] Management transport active\r\n");
+    }
+    else
+    {
+      debug_log_printf("[boot] Management transport activation failed, result=%d\r\n",
+                       (int)management_activation_result);
+    }
+  }
 
   while (1)
   {
@@ -174,6 +227,11 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
+bool management_transport_configuration_is_ready(void)
+{
+  return management_configuration_ready;
+}
 
 /* USER CODE END Application */
 

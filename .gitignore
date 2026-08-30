@@ -36,6 +36,10 @@
 # Python cache directories
 __pycache__/
 
+# Host-side test build output
+/Tests/build/
+/Tests/Testing/
+
 # Editor and temporary files
 *.log
 *.tmp
@@ -54,4 +58,4 @@ Desktop.ini
 
 # 个人文件
 todo.txt
-lwip_configuration.md
+.em_skill.json

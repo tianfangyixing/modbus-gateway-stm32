@@ -1,0 +1,2 @@
+/Tests/Configuration/fixtures/*.pem -text
+/Tests/Configuration/fixtures/*.der -text

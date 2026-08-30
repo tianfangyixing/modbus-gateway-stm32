@@ -17,6 +17,8 @@ LR_IROM1 0x08000000 0x00100000  {    ; load region size_region
   }
   RW_CCMRAM 0x10000000 0x00010000  {
    freertos.o (.bss)
+   heap_4.o (.bss)
+   segger_rtt.o (.bss)
    *(.ccmdata)
   }
 }

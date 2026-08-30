@@ -56,7 +56,7 @@
 主要入口与修改边界：
 
 - `Core/Src/main.c`：系统启动、时钟、RTC、RNG、Mbed TLS 和其他外设的初始化入口。
-- `Core/Src/freertos.c`：RTOS 对象创建以及 USB Device、LwIP、SNTP、Modbus 网关和 MQTT 的初始化入口。
+- `Core/Src/freertos.c`：RTOS 对象创建以及 USB Device、LwIP、Configuration、SNTP、Modbus 和 MQTT 的初始化入口。
 - `Core/Src/modbus_gateway_app.c`：组装并启动 RS485 端口、RTU 事务调度器与 Modbus TCP 服务器。
 - `Modbus/`：项目自有的核心协议与网关业务代码；公共接口放在 `include/`，实现放在 `src/`。
 - 修改 `Modbus/` 前应检查 `Spec/modbus/` 中对应规范，并保持接口、返回值和资源所有权约定一致。
@@ -72,6 +72,3 @@
 - 所有多行代码块、类型定义和初始化的大括号均采用 Allman 风格。
 - C 代码应优先保持紧凑。函数调用、函数声明和条件表达式在缩进后不超过 120 个字符时，必须写在同一行，禁止无必要地按参数换行；仅当超过 120 个字符或参数本身是多行表达式时才允许换行。
 - 禁止使用任何方式显式丢弃值，也不得因此删除对应的函数调用、参数或变量。
-
-## 注意事项
-

@@ -1,0 +1,6 @@
+#ifndef MANAGEMENT_TEST_USBD_CDC_H
+#define MANAGEMENT_TEST_USBD_CDC_H
+
+#define CDC_IN_EP 0x81U
+
+#endif
