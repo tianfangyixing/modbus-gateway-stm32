@@ -32,6 +32,9 @@
 /* USER CODE BEGIN 0 */
 
 #include "sntp_service.h"
+#include "lwip_random.h"
+
+#define LWIP_HOOK_TCP_ISN(local_ip, local_port, remote_ip, remote_port) lwip_random_u32()
 
 #define SNTP_SERVER_DNS 1
 #define SNTP_SET_SYSTEM_TIME(seconds) sntp_service_set_time(seconds)

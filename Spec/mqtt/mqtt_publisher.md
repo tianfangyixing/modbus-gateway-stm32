@@ -133,12 +133,20 @@ Publisher 必须把 `connected` 置假、状态设为 `DISCONNECTED`，在 TCPIP
 网络条件恢复前，连接任务保持等待。
 
 网络条件满足且 `connected` 为真时，连接任务只延时；否则继续检查 SNTP 已同步，确保 active CA 对应的 TLS 配置
-可用，解析 active broker hostname，然后调用一次 `mqtt_client_connect()`。连接任务不等待 CONNACK、不根据该
-函数返回值切换流程，也不实施指数退避；下一轮仍重新检查网络条件和 `connected`。
+可用并解析 active broker hostname，然后调用一次 `mqtt_client_connect()` 并检查其同步返回值；只有 `ERR_OK` 才
+表示 TCP/TLS/MQTT 异步连接已经启动。其他返回值必须记录错误并保持未连接；`ERR_ISCONN` 表示上一次异步连接
+仍停留在 MQTT client 中，任务必须在 TCPIP core lock 内调用 `mqtt_disconnect()` 销毁对应 PCB。下一轮仍重新
+检查网络条件、`connected`、DNS 和连接条件；重试周期保持 15 秒，不实施指数退避。
 
 连接回调收到 `MQTT_CONNECT_ACCEPTED` 时把 `connected` 置真并把状态设为 `CONNECTED`；其他状态均把
 `connected` 置假、状态设为 `DISCONNECTED`，并以 `NOT_CONNECTED` 逐个终结全部占用的普通发布槽。断开后
-连接任务会在下一次 15 秒周期重新执行 TLS/DNS/连接步骤。
+LwIP 已在调用失败或断开回调前关闭 PCB 并把 MQTT client 置为 `TCP_DISCONNECTED`，连接任务会在下一次 15 秒
+周期重新执行 TLS/DNS/连接步骤。
+
+系统启动必须在 `MX_LWIP_Init()` 前使用 STM32 硬件 RNG 为 LwIP 平台 `rand()` 播种，使自动分配的 TCP 临时端口
+不会在每次复位后重复同一序列。项目还必须通过 `LWIP_HOOK_TCP_ISN` 为每条新 TCP 连接提供硬件随机初始序列号，
+避免未正常关闭的 broker 旧连接与复位后的新连接复用相同四元组和 ISN。实现只能位于项目自有 `LWIP/Target/`
+和 `lwipopts.h`，不得修改 LwIP vendor 源码。
 
 will 参数在初始化时从稳定 active 配置写入 CONNECT 参数。每个成功 CONNACK 都在连接回调中直接异步提交一次
 启用的 online message；提交结果只记录日志，不阻塞连接成立，也不触发额外重试。普通发布失败不缓存旧 payload，

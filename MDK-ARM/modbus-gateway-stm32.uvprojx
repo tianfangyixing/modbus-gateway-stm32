@@ -400,11 +400,6 @@
               <FilePath>..\Core\Src\system_time.c</FilePath>
             </File>
             <File>
-              <FileName>modbus_gateway_app.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\modbus_gateway_app.c</FilePath>
-            </File>
-            <File>
               <FileName>debug_log.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Core\Src\debug_log.c</FilePath>
@@ -1451,6 +1446,11 @@
                   </Cads>
                 </FileArmAds>
               </FileOption>
+            </File>
+            <File>
+              <FileName>lwip_random.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../LWIP/Target/lwip_random.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -6388,6 +6388,11 @@
         <Group>
           <GroupName>Modbus</GroupName>
           <Files>
+            <File>
+              <FileName>modbus_gateway_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Modbus\src\modbus_gateway_app.c</FilePath>
+            </File>
             <File>
               <FileName>modbus_rtu.c</FileName>
               <FileType>1</FileType>

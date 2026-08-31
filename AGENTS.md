@@ -15,7 +15,7 @@
 .
 ├── Core/
 │   ├── Inc/                         # STM32、FreeRTOS、外设配置及应用层公共头文件
-│   └── Src/                         # 系统启动、外设、中断、RTOS 任务及网关集成代码
+│   └── Src/                         # 系统启动、外设、中断及 RTOS 任务代码
 ├── Configuration/
 │   ├── include/                     # 配置模型、二进制编解码与持久化服务公共接口
 │   └── src/                         # 配置校验、Schema v1 codec 与双槽持久化实现
@@ -27,7 +27,7 @@
 │   └── src/                         # 帧解析、配置管理、状态查询和重启事务实现
 ├── Modbus/
 │   ├── include/                     # Modbus 模块公共类型及 API
-│   └── src/                         # RTU、RS485、ADU 池、事务调度器、TCP 服务器和周期采集器
+│   └── src/                         # 网关组装、RTU、RS485、ADU 池、事务调度器、TCP 服务器和周期采集器
 ├── MQTT/
 │   ├── include/                     # MQTT 发布接口及 TLS 安全策略
 │   └── src/                         # 配置驱动的 MQTT 连接发布和 LwIP ALTCP TLS 适配
@@ -72,7 +72,7 @@
 - `Core/Src/main.c`：系统启动、时钟、RTC、RNG、Mbed TLS 和其他外设的初始化入口。
 - `Core/Src/freertos.c`：RTOS 对象创建，以及 USB Device、External Flash、LwIP、Configuration、SNTP、MQTT、
   Modbus 和 Management 的初始化入口；调整顺序时必须保留模块间的就绪依赖。
-- `Core/Src/modbus_gateway_app.c`：组装并启动 RS485 端口、RTU 事务调度器、Collector 与 Modbus TCP 服务器。
+- `Modbus/src/modbus_gateway_app.c`：组装并启动 RS485 端口、RTU 事务调度器、Collector 与 Modbus TCP 服务器。
 - `Configuration/`：active 配置在启动时由 Configuration Service 装载，成功写入的新配置只供后续启动使用；
   修改模型、校验、二进制布局或持久化行为前，应先检查 `Spec/configuration/` 的对应规范。
 - `ExternalFlash/`：W25Q128 驱动不可重入，也不得从 ISR 调用；传给 SPI/DMA 的缓冲区必须位于 DMA 可访问内存。

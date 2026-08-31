@@ -37,6 +37,7 @@
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
+#include "lwip_random.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/entropy_poll.h"
 #include "management_transport.h"
@@ -160,6 +161,7 @@ void StartDefaultTask(void *argument)
     while(1);
   }
 
+  lwip_random_initialize();
   /* 先初始化lwip堆，才能校验configuration的证书 */
   MX_LWIP_Init();
   altcp_mbedtls_mem_init();

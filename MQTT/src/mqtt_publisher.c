@@ -281,16 +281,15 @@ static void mqtt_complete_publish_slots(mqtt_publisher_publish_result_t result)
 
 static void mqtt_disconnect_for_network_loss(void)
 {
-    connected = false;
-    mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
-
     LOCK_TCPIP_CORE();
+    connected = false;
     if (mqtt_client != NULL)
     {
         mqtt_disconnect(mqtt_client);
     }
     UNLOCK_TCPIP_CORE();
 
+    mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
     mqtt_complete_publish_slots(MQTT_PUBLISHER_PUBLISH_NOT_CONNECTED);
 }
 
@@ -320,6 +319,7 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *argument, mqtt_conne
 static void mqtt_connection_task(void *argument)
 {
     ip_addr_t mqtt_ip;
+    err_t connect_result;
 
     if (argument != NULL)
     {
@@ -358,7 +358,6 @@ static void mqtt_connection_task(void *argument)
             continue;
         }
 
-
         mqtt_publisher_state = MQTT_PUBLISHER_STATE_CONNECTING;
         if (!mqtt_ensure_tls_config() || mqtt_resolve_host(&mqtt_ip) != ERR_OK)
         {
@@ -368,12 +367,31 @@ static void mqtt_connection_task(void *argument)
         }
 
         mqtt_client_info.tls_config = mqtt_tls_config;
-        debug_log_printf("MQTT connecting to %s:%u\r\n", (const char *)mqtt_configuration->broker_address.bytes,
-                         (unsigned int)mqtt_configuration->broker_port);
         LOCK_TCPIP_CORE();
-        mqtt_client_connect(mqtt_client, &mqtt_ip, mqtt_configuration->broker_port, mqtt_connection_cb,
-                            &mqtt_client_info, &mqtt_client_info);
+        if (connected)
+        {
+            UNLOCK_TCPIP_CORE();
+            vTaskDelay(pdMS_TO_TICKS(MQTT_CONNECTION_RETRY_INTERVAL_MS));
+            continue;
+        }
+        connect_result = mqtt_client_connect(mqtt_client, &mqtt_ip, mqtt_configuration->broker_port,
+                                             mqtt_connection_cb, &mqtt_client_info, &mqtt_client_info);
+        if (connect_result == ERR_ISCONN)
+        {
+            mqtt_disconnect(mqtt_client);
+        }
         UNLOCK_TCPIP_CORE();
+        if (connect_result == ERR_OK)
+        {
+            debug_log_printf("MQTT connection attempt started: %s:%u\r\n",
+                             (const char *)mqtt_configuration->broker_address.bytes,
+                             (unsigned int)mqtt_configuration->broker_port);
+        }
+        else
+        {
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
+            debug_log_printf("MQTT connection attempt rejected, err=%d\r\n", (int)connect_result);
+        }
         vTaskDelay(pdMS_TO_TICKS(MQTT_CONNECTION_RETRY_INTERVAL_MS));
     }
 }
