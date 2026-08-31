@@ -11,26 +11,29 @@
 - GNU Make 4.4.1
 
 ```powershell
-cmake -S Tests -B Tests/build -G "MinGW Makefiles" -DCMAKE_C_COMPILER=D:/mingw64/bin/gcc.exe
-cmake --build Tests/build --parallel
-ctest --test-dir Tests/build --output-on-failure
+$hostTestBuild = Join-Path $env:TEMP ("modbus-gateway-host-tests-" + [guid]::NewGuid().ToString("N"))
+cmake -S Tests -B $hostTestBuild -G "MinGW Makefiles" -DCMAKE_C_COMPILER=D:/mingw64/bin/gcc.exe
+cmake --build $hostTestBuild --parallel
+ctest --test-dir $hostTestBuild --output-on-failure
 ```
 
-八个 CTest executable 分别为：
+构建输出必须放在新的系统临时目录，不复用仓库内的 `Tests/build`。十个 CTest executable 及其主要标签分别为：
 
-- `management_frame_tests`
-- `management_transport_tests`
-- `configuration_defaults_tests`
-- `configuration_validate_tests`
-- `configuration_equals_tests`
-- `configuration_property_tests`
-- `configuration_binary_codec_tests`
-- `configuration_service_tests`
+- `management_frame_tests`：`management;frame`
+- `management_transport_tests`：`management;transport`
+- `configuration_defaults_tests`：`configuration`
+- `configuration_validate_tests`：`configuration`
+- `configuration_equals_tests`：`configuration`
+- `configuration_property_tests`：`configuration;properties`
+- `configuration_binary_codec_tests`：`configuration`
+- `configuration_service_tests`：`configuration;service`
+- `mqtt_publisher_client_id_tests`：`mqtt;client-id`
+- `modbus_collector_codec_tests`：`modbus;collector;codec`
 
 只运行固定种子属性测试：
 
 ```powershell
-ctest --test-dir Tests/build --output-on-failure -L properties
+ctest --test-dir $hostTestBuild --output-on-failure -L properties
 ```
 
 属性测试默认纳入完整 `ctest`，超时为 120 秒。
@@ -76,6 +79,14 @@ Management 测试直接链接 `Management/src/management_frame.c` 和 `Managemen
 系统复位这些硬件或调度边界。CRC、流式 parser、transaction/session、响应缓存和重试状态机均使用生产实现。
 用例与摘要条款的映射见 [Management/README.md](Management/README.md)。
 
+MQTT 测试以专用测试宏只编译 `MQTT/src/mqtt_publisher.c` 内部的纯 UID 编码逻辑，验证三个 32-bit UID word
+完整保留为 `STM` 前缀的大写 Base32 Client ID，不引入 FreeRTOS、LwIP、TLS 或 HAL。规范映射见
+[MQTT/README.md](MQTT/README.md)。
+
+Modbus Collector codec 测试链接生产 RTU 编解码器与主机 RS485 adapter，验证 FC01～FC04 的 quantity-1 请求、
+bit/UINT16/INT16 标量 payload 以及错误响应和输出容量边界；它不创建 Collector 任务，也不访问 UART/RS485
+硬件。规范映射见 [Modbus/README.md](Modbus/README.md)。
+
 ## Unity
 
 测试固定使用 ThrowTheSwitch Unity `v2.7.0`，只随仓库保存核心三个源码文件和 MIT 许可证：
@@ -103,7 +114,7 @@ Management 测试直接链接 `Management/src/management_frame.c` 和 `Managemen
 
 ## 证书夹具
 
-`Configuration/fixtures/` 保存测试专用固定证书。测试运行时不生成证书，也不使用生产 MQTT 根证书。
+`Configuration/fixtures/` 保存测试专用固定证书。测试运行时不生成证书，也不使用部署时 active 配置中的 MQTT CA。
 根目录 `.gitattributes` 将 PEM/DER 标记为不进行文本归一化，确保 LF、CRLF 和 DER 字节在不同 Git
 环境中保持不变。
 

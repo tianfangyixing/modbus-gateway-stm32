@@ -408,20 +408,6 @@ static modbus_rtu_result_t decode_register_response(const modbus_rtu_adu_t *resp
     return MODBUS_RTU_OK;
 }
 
-static uint64_t divide_round_up(uint64_t numerator, uint64_t denominator)
-{
-    return (numerator + denominator - UINT64_C(1)) / denominator;
-}
-
-static uint32_t calculate_write_timeout_ms(uint16_t request_length, uint32_t baud_rate)
-{
-    uint64_t airtime_us;
-    uint64_t total_ms;
-
-    airtime_us = divide_round_up((uint64_t)request_length * MODBUS_RTU_BITS_PER_CHARACTER * UINT64_C(1000000), baud_rate);
-    total_ms = divide_round_up(airtime_us, UINT64_C(1000));
-    return (uint32_t)(total_ms + MODBUS_RTU_SCHEDULING_MARGIN_MS);
-}
 
 modbus_rtu_result_t modbus_rtu_validate_request(const modbus_rtu_adu_t *rtu)
 {
@@ -589,24 +575,14 @@ modbus_rtu_result_t modbus_rtu_decode_exception_response(const modbus_rtu_adu_t 
 
 modbus_rtu_channel_result_t modbus_rtu_channel_init(
     modbus_rtu_channel_t *channel,
-    void *context,
-    modbus_rtu_read_fn read,
-    modbus_rtu_write_fn write,
-    uint32_t baud_rate)
+    void *context)
 {
-    if (channel == NULL || read == NULL || write == NULL)
+    if (channel == NULL)
     {
         return MODBUS_RTU_CHANNEL_INVALID_ARGUMENT;
     }
-    if (baud_rate == 0U)
-    {
-        return MODBUS_RTU_CHANNEL_BAUD_RATE_INVALID;
-    }
 
     channel->context = context;
-    channel->read = read;
-    channel->write = write;
-    channel->baud_rate = baud_rate;
     return MODBUS_RTU_CHANNEL_OK;
 }
 
@@ -617,26 +593,21 @@ modbus_rtu_transaction_result_t modbus_rtu_transact(modbus_rtu_channel_t *channe
         return MODBUS_RTU_TRANSACTION_INVALID_ARGUMENT;
     }
 
-    int32_t write_result = channel->write(channel->context, request->data, request->length, calculate_write_timeout_ms(request->length, channel->baud_rate));
+    uint16_t recv_len;
 
-    if (write_result != (int32_t)request->length)
+    modbus_rtu_rs485_port_result_t result =  modbus_rtu_rs485_port_transceive(channel->context, request->data, request->length,
+                                                                                response->data, response_timeout_ms, &recv_len);
+
+    if(result == MODBUS_RTU_RS485_PORT_RESULT_UART_ERROR)
     {
         return MODBUS_RTU_TRANSACTION_ADAPTER_IO_ERROR;
     }
-
-    int32_t read_result = channel->read(channel->context, response->data, MODBUS_RTU_MAX_LENGTH, (uint32_t)response_timeout_ms);
-
-    if (read_result < 0 || read_result > (int32_t)MODBUS_RTU_MAX_LENGTH)
-    {
-        return MODBUS_RTU_TRANSACTION_ADAPTER_IO_ERROR;
-    }
-
-    if (read_result == 0)
+    else if(result == MODBUS_RTU_RS485_PORT_RESULT_SLAVE_TIMEOUT)
     {
         return MODBUS_RTU_TRANSACTION_RESPONSE_TIMEOUT;
     }
 
-    response->length = (uint16_t)read_result;
+    response->length = recv_len;
 
     uint8_t request_function = request->data[MODBUS_RTU_FUNCTION_INDEX];
     uint8_t response_function = response->data[MODBUS_RTU_FUNCTION_INDEX];

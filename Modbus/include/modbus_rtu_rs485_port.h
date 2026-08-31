@@ -3,8 +3,15 @@
 
 #include <stdint.h>
 
-void modbus_rtu_rs485_port_init(void);
-int32_t modbus_rtu_rs485_port_read(void *context, uint8_t *buffer, uint16_t capacity, uint32_t timeout_ms);
-int32_t modbus_rtu_rs485_port_write(void *context, const uint8_t *buffer, uint16_t count, uint32_t timeout_ms);
+typedef enum
+{
+    MODBUS_RTU_RS485_PORT_RESULT_OK,
+    MODBUS_RTU_RS485_PORT_RESULT_UART_ERROR,
+    MODBUS_RTU_RS485_PORT_RESULT_SLAVE_TIMEOUT,
+}modbus_rtu_rs485_port_result_t;
+
+void modbus_rtu_rs485_port_init(uint32_t configured_baud_rate, uint8_t configured_format);
+modbus_rtu_rs485_port_result_t modbus_rtu_rs485_port_transceive(void *context, const uint8_t *request, uint16_t request_length, uint8_t *response, uint32_t response_timeout_ms, uint16_t *receive_len);
+
 
 #endif

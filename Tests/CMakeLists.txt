@@ -219,6 +219,8 @@ target_link_libraries(configuration_test_support PUBLIC
 add_library(configuration_service_runtime STATIC
     "${REPOSITORY_ROOT}/Configuration/src/configuration_binary_codec.c"
     "${REPOSITORY_ROOT}/Configuration/src/configuration_service.c"
+    "${REPOSITORY_ROOT}/Middlewares/Third_Party/RTT/SEGGER_RTT.c"
+    "${REPOSITORY_ROOT}/Middlewares/Third_Party/RTT/SEGGER_RTT_printf.c"
 )
 
 target_compile_definitions(configuration_service_runtime PRIVATE
@@ -243,6 +245,7 @@ target_include_directories(configuration_service_runtime PRIVATE
     "${REPOSITORY_ROOT}/Configuration/include"
     "${REPOSITORY_ROOT}/ExternalFlash/include"
     "${REPOSITORY_ROOT}/MBEDTLS/App"
+    "${REPOSITORY_ROOT}/Middlewares/Third_Party/RTT"
     "${LWIP_ROOT}/src/include"
     "${LWIP_ROOT}/src/apps/altcp_tls"
     "${LWIP_ROOT}/system"
@@ -322,6 +325,60 @@ target_link_libraries(configuration_service_tests PRIVATE
 
 add_test(NAME configuration_service_tests COMMAND configuration_service_tests)
 set_tests_properties(configuration_service_tests PROPERTIES LABELS "configuration;service")
+
+add_executable(mqtt_publisher_client_id_tests
+    MQTT/test_mqtt_publisher_client_id.c
+    "${REPOSITORY_ROOT}/MQTT/src/mqtt_publisher.c"
+)
+
+target_compile_definitions(mqtt_publisher_client_id_tests PRIVATE
+    MQTT_PUBLISHER_CLIENT_ID_TEST
+)
+
+target_compile_options(mqtt_publisher_client_id_tests PRIVATE
+    -Wall
+    -Wextra
+    -Werror
+)
+
+target_include_directories(mqtt_publisher_client_id_tests PRIVATE
+    "${REPOSITORY_ROOT}/MQTT/include"
+)
+
+target_link_libraries(mqtt_publisher_client_id_tests PRIVATE
+    unity
+)
+
+add_test(NAME mqtt_publisher_client_id_tests COMMAND mqtt_publisher_client_id_tests)
+set_tests_properties(mqtt_publisher_client_id_tests PROPERTIES LABELS "mqtt;client-id")
+
+add_executable(modbus_collector_codec_tests
+    Modbus/test_modbus_collector_codec.c
+    support/modbus_rtu_rs485_port_test_adapter.c
+    "${REPOSITORY_ROOT}/Modbus/src/modbus_collector_codec.c"
+    "${REPOSITORY_ROOT}/Modbus/src/modbus_rtu.c"
+)
+
+target_compile_options(modbus_collector_codec_tests PRIVATE
+    -Wall
+    -Wextra
+    -Werror
+)
+
+target_include_directories(modbus_collector_codec_tests PRIVATE
+    support
+    "${REPOSITORY_ROOT}/Configuration/include"
+    "${REPOSITORY_ROOT}/Modbus/include"
+    "${LWIP_ROOT}/src/include"
+    "${LWIP_ROOT}/system"
+)
+
+target_link_libraries(modbus_collector_codec_tests PRIVATE
+    unity
+)
+
+add_test(NAME modbus_collector_codec_tests COMMAND modbus_collector_codec_tests)
+set_tests_properties(modbus_collector_codec_tests PROPERTIES LABELS "modbus;collector;codec")
 
 set_tests_properties(configuration_property_tests PROPERTIES
     LABELS "configuration;properties"

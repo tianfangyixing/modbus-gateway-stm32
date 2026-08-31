@@ -28,21 +28,21 @@ typedef enum
     MODBUS_TCP_SERVER_OK = 0,
     MODBUS_TCP_SERVER_INVALID_ARGUMENT,
     MODBUS_TCP_SERVER_INVALID_STATE,
-    MODBUS_TCP_SERVER_QUEUE_CREATE_FAILED,
     MODBUS_TCP_SERVER_TASK_CREATE_FAILED
 } modbus_tcp_server_result_t;
 
 typedef enum
 {
     MODBUS_TCP_SERVER_STATE_UNINITIALIZED = 0,
-    MODBUS_TCP_SERVER_STATE_INITIALIZED,
-    MODBUS_TCP_SERVER_STATE_STARTED
+    MODBUS_TCP_SERVER_STATE_RUNNING,
+    MODBUS_TCP_SERVER_STATE_FAILED
 } modbus_tcp_server_state_t;
 
 
 typedef struct
 {
-    modbus_rtu_transaction_scheduler_t *transaction_scheduler;
+    QueueHandle_t request_queue;
+    QueueHandle_t response_queue;
     uint16_t listen_port;
     uint32_t response_timeout_ms;
     const char *task_name;
@@ -89,12 +89,8 @@ typedef struct
     modbus_tcp_server_state_t state;
     uint16_t listener_port;
     uint32_t response_timeout_ms;
-    StaticQueue_t high_request_queue_buffer;
-    StaticQueue_t high_response_queue_buffer;
-    uint8_t high_request_queue_storage[sizeof(modbus_rtu_transaction_scheduler_request_t)];
-    uint8_t high_response_queue_storage[sizeof(modbus_rtu_transaction_scheduler_response_t)];
-    QueueHandle_t high_request_queue;
-    QueueHandle_t high_response_queue;
+    QueueHandle_t request_queue;
+    QueueHandle_t response_queue;
     TaskHandle_t task_handle;
 
     uint32_t available_token;
@@ -106,9 +102,11 @@ typedef struct
     modbus_tcp_server_client_t clients[MODBUS_TCP_SERVER_MAX_CLIENTS];
 } modbus_tcp_server_t;
 
+/**
+  * @brief Initialize and start a Modbus TCP server using externally owned scheduler queues.
+  * @pre server is zero-initialized and both queues are bound to a running transaction scheduler.
+  */
 modbus_tcp_server_result_t modbus_tcp_server_init(modbus_tcp_server_t *server,
-                                                  modbus_tcp_server_config_t *config);
-
-modbus_tcp_server_result_t modbus_tcp_server_start(modbus_tcp_server_t *server);
+                                                  const modbus_tcp_server_config_t *config);
 
 #endif

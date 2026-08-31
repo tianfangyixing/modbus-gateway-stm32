@@ -3,6 +3,8 @@
 #include "mbedtls/ssl.h"
 #include "mbedtls/x509.h"
 
+#include <string.h>
+
 #if !defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
 #error "MQTT TLS requires MBEDTLS_SSL_SERVER_NAME_INDICATION"
 #endif
@@ -28,6 +30,32 @@ void mqtt_tls_require_secure_adapter(void)
 {
 }
 
+static const char *mqtt_tls_broker_hostname;
+
+bool mqtt_tls_policy_set_broker_hostname(const char *broker_hostname)
+{
+    size_t length;
+
+    if (broker_hostname == NULL)
+    {
+        return false;
+    }
+
+    length = strlen(broker_hostname);
+    if (length == 0U || length > 253U)
+    {
+        return false;
+    }
+
+    mqtt_tls_broker_hostname = broker_hostname;
+    return true;
+}
+
+void mqtt_tls_policy_clear_broker_hostname(void)
+{
+    mqtt_tls_broker_hostname = NULL;
+}
+
 static void mqtt_tls_ssl_conf_authmode(mbedtls_ssl_config *conf, int authmode)
 {
     if (conf != NULL && conf->endpoint == MBEDTLS_SSL_IS_CLIENT)
@@ -40,14 +68,26 @@ static void mqtt_tls_ssl_conf_authmode(mbedtls_ssl_config *conf, int authmode)
 
 static int mqtt_tls_ssl_setup(mbedtls_ssl_context *ssl, const mbedtls_ssl_config *conf)
 {
-    int result = mbedtls_ssl_setup(ssl, conf);
+    int result;
 
-    if (result != 0 || conf == NULL || conf->endpoint != MBEDTLS_SSL_IS_CLIENT)
+    if (ssl == NULL || conf == NULL)
+    {
+        return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    result = mbedtls_ssl_setup(ssl, conf);
+
+    if (result != 0 || conf->endpoint != MBEDTLS_SSL_IS_CLIENT)
     {
         return result;
     }
 
-    return mbedtls_ssl_set_hostname(ssl, MQTT_TLS_SERVER_NAME);
+    if (mqtt_tls_broker_hostname == NULL)
+    {
+        return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
+    }
+
+    return mbedtls_ssl_set_hostname(ssl, mqtt_tls_broker_hostname);
 }
 
 static int mqtt_tls_ssl_handshake(mbedtls_ssl_context *ssl)

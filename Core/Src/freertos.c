@@ -32,6 +32,8 @@
 #include "configuration_service.h"
 #include "external_flash.h"
 #include "lwip/apps/lwiperf.h"
+#include "lwip/dhcp.h"
+#include "lwip/dns.h"
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
@@ -68,7 +70,7 @@ static volatile bool management_configuration_ready;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-uint32_t defaultTaskBuffer[ 2048 ];
+uint32_t defaultTaskBuffer[ 1024 ];
 osStaticThreadDef_t defaultTaskControlBlock;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
@@ -146,6 +148,55 @@ void StartDefaultTask(void *argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
 
+  external_flash_result_t flash_result = external_flash_init();
+  if (flash_result == EXTERNAL_FLASH_RESULT_OK)
+  {
+    debug_log_printf("[boot] external flash ready\r\n");
+  }
+  else
+  {
+    debug_log_printf("[flash-test] FAIL: initialization, result=%d\r\n", (int)flash_result);
+    debug_log_printf("[boot] external flash initialization failedp\r\n");
+    while(1);
+  }
+
+  /* 先初始化lwip堆，才能校验configuration的证书 */
+  MX_LWIP_Init();
+  altcp_mbedtls_mem_init();
+
+  configuration_service_result_t configuration_result = configuration_service_init();
+
+  if (configuration_result == CONFIGURATION_SERVICE_OK)
+  {
+    management_configuration_ready = true;
+    debug_log_printf("[boot] Configuration Service ready\r\n");
+  }
+  else
+  {
+     debug_log_printf("[boot] Configuration Service initialization failed, result=%d\r\n",
+                       (int)configuration_result);
+     while(1);
+  }
+
+  const configuration_network_t *network_configuration = &configuration_service_active()->network;
+
+  if (network_configuration->mode == CONFIGURATION_NETWORK_MODE_STATIC)
+  {
+    ip_addr_t dns_primary;
+    ip_addr_t dns_secondary;
+
+    ip_addr_copy_from_ip4(dns_primary, network_configuration->dns_primary);
+    ip_addr_copy_from_ip4(dns_secondary, network_configuration->dns_secondary);
+
+    LOCK_TCPIP_CORE();
+    dhcp_release_and_stop(netif_default);
+    netif_set_addr(netif_default, &network_configuration->ip_address,
+                   &network_configuration->subnet_mask, &network_configuration->gateway);
+    dns_setserver(0U, &dns_primary);
+    dns_setserver(1U, &dns_secondary);
+    UNLOCK_TCPIP_CORE();
+  }
+
   debug_log_printf("[boot] default task started\r\n");
   if (management_initialization_result == MANAGEMENT_TRANSPORT_OK)
   {
@@ -157,49 +208,20 @@ void StartDefaultTask(void *argument)
                      (int)management_initialization_result);
   }
   debug_log_printf("[boot] initializing external flash\r\n");
-  external_flash_result_t flash_result = external_flash_init();
-  if (flash_result == EXTERNAL_FLASH_RESULT_OK)
-  {
-    debug_log_printf("[boot] external flash ready\r\n");
-  }
-  else
-  {
-    debug_log_printf("[flash-test] FAIL: initialization, result=%d\r\n", (int)flash_result);
-    debug_log_printf("[boot] external flash initialization failed, continuing startup\r\n");
-  }
 
   /* The altcp TLS path does not call mbedtls_net_init(), so initialize LwIP explicitly. */
   debug_log_printf("[boot] initializing LwIP\r\n");
-  MX_LWIP_Init();
+
   debug_log_printf("[boot] LwIP ready\r\n");
   /* Configuration validation can use mbedTLS before MQTT creates its first ALTCP TLS configuration. */
-  altcp_mbedtls_mem_init();
-  if (flash_result == EXTERNAL_FLASH_RESULT_OK)
-  {
-    configuration_service_result_t configuration_result = configuration_service_init();
 
-    if (configuration_result == CONFIGURATION_SERVICE_OK)
-    {
-      management_configuration_ready = true;
-      debug_log_printf("[boot] Configuration Service ready\r\n");
-    }
-    else
-    {
-      debug_log_printf("[boot] Configuration Service initialization failed, result=%d\r\n",
-                       (int)configuration_result);
-    }
-  }
-  else
-  {
-    debug_log_printf("[boot] Configuration Service skipped because External Flash is unavailable\r\n");
-  }
   sntp_service_init();
   debug_log_printf("[boot] SNTP service ready\r\n");
+
+  mqtt_publisher_init();
+
   modbus_gateway_app_init();
   debug_log_printf("[boot] Modbus gateway ready\r\n");
-
-  mqtt_example_init();
-  debug_log_printf("[boot] MQTT publisher ready\r\n");
 
   if (management_initialization_result == MANAGEMENT_TRANSPORT_OK)
   {

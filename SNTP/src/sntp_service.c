@@ -9,6 +9,7 @@
 #include "lwip/apps/sntp.h"
 #include "lwip/netif.h"
 #include "stm32f4xx_hal.h"
+#include "configuration_service.h"
 #include "debug_log.h"
 
 static StaticSemaphore_t time_mutex_buffer;
@@ -339,11 +340,28 @@ void sntp_service_set_time(uint32_t unix_seconds)
 
 void sntp_service_init(void)
 {
-	time_mutex = xSemaphoreCreateMutexStatic(&time_mutex_buffer);
-	LOCK_TCPIP_CORE();
+    const configuration_sntp_t *configuration = &configuration_service_active()->sntp;
+    uint8_t index;
+
+    time_mutex = xSemaphoreCreateMutexStatic(&time_mutex_buffer);
+    LOCK_TCPIP_CORE();
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "ntp.aliyun.com");
-    sntp_setservername(1, "ntp.tencent.com");
+    for (index = 0U; index < 2U; index++)
+    {
+        const configuration_endpoint_address_t *server = &configuration->servers[index];
+
+        if (server->type == CONFIGURATION_ENDPOINT_ADDRESS_TYPE_HOSTNAME)
+        {
+            sntp_setservername(index, (const char *)server->value.hostname.bytes);
+        }
+        else
+        {
+            ip_addr_t address;
+
+            ip_addr_copy_from_ip4(address, server->value.ipv4);
+            sntp_setserver(index, &address);
+        }
+    }
     sntp_init();
-	UNLOCK_TCPIP_CORE();
+    UNLOCK_TCPIP_CORE();
 }

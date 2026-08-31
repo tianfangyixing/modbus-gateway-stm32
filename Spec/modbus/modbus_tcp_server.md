@@ -19,8 +19,8 @@
 - 将 RTU 正常响应或异常响应转换回 TCP 响应；
 - 对本地校验错误、网关错误和目标设备错误生成 Modbus 异常响应。
 
-服务器不创建或启动 RTU 调度器，不管理低优先级队列，也不支持停止、重启、
-反初始化或运行期间修改配置。
+服务器不创建或启动 RTU 调度器，也不创建或绑定高、低优先级队列。高优先级请求/响应队列由调用方创建、
+绑定并通过配置注入，服务器仅在运行期间借用；服务器不支持停止、重启、反初始化或运行期间修改配置。
 
 ## 2. 常量与公开状态
 
@@ -40,10 +40,9 @@ MBAP `Length` 字段必须位于 `2..254`。完整 TCP ADU 的字节数为
 
 | 枚举值 | 含义 |
 | --- | --- |
-| `MODBUS_TCP_SERVER_OK` | 初始化或启动成功 |
+| `MODBUS_TCP_SERVER_OK` | 初始化并启动成功 |
 | `MODBUS_TCP_SERVER_INVALID_ARGUMENT` | 必需参数为空或配置值超出允许范围 |
 | `MODBUS_TCP_SERVER_INVALID_STATE` | 当前服务器状态不允许执行该操作 |
-| `MODBUS_TCP_SERVER_QUEUE_CREATE_FAILED` | 静态请求队列或响应队列创建失败 |
 | `MODBUS_TCP_SERVER_TASK_CREATE_FAILED` | 静态服务器任务创建失败 |
 
 ### 2.3 `modbus_tcp_server_state_t`
@@ -51,8 +50,8 @@ MBAP `Length` 字段必须位于 `2..254`。完整 TCP ADU 的字节数为
 | 枚举值 | 含义 |
 | --- | --- |
 | `MODBUS_TCP_SERVER_STATE_UNINITIALIZED` | 尚未成功初始化 |
-| `MODBUS_TCP_SERVER_STATE_INITIALIZED` | 初始化成功，服务器任务正在等待启动通知 |
-| `MODBUS_TCP_SERVER_STATE_STARTED` | 已发送启动通知，不允许再次启动 |
+| `MODBUS_TCP_SERVER_STATE_RUNNING` | 服务器任务已创建并开始运行 |
+| `MODBUS_TCP_SERVER_STATE_FAILED` | 服务器任务创建失败，不允许使用同一对象重试初始化 |
 
 ### 2.4 客户端状态
 
@@ -74,7 +73,8 @@ MBAP `Length` 字段必须位于 `2..254`。完整 TCP ADU 的字节数为
 
 | 字段 | 约束 |
 | --- | --- |
-| `transaction_scheduler` | 已初始化、尚未启动且高优先级队列尚未绑定的调度器；不得为空 |
+| `request_queue` | 已绑定到运行中调度器的高优先级请求队列；不得为空，元素类型必须为 `modbus_rtu_transaction_scheduler_request_t` |
+| `response_queue` | 与 `request_queue` 成对的高优先级响应队列；不得为空，元素类型必须为 `modbus_rtu_transaction_scheduler_response_t` |
 | `listen_port` | TCP 监听端口；必须大于 0 |
 | `response_timeout_ms` | RTU 完整响应超时；必须位于 `50..60000` 毫秒 |
 | `task_name` | 服务器任务名称；不得为空 |
@@ -83,7 +83,7 @@ MBAP `Length` 字段必须位于 `2..254`。完整 TCP ADU 的字节数为
 | `task_stack_depth` | 任务栈深度；必须大于 0，单位为 `StackType_t` 元素 |
 | `task_buffer` | 静态任务控制块；不得为空，生命周期必须覆盖服务器任务 |
 
-配置结构本身只需在 `modbus_tcp_server_init()` 调用期间保持有效。调度器、任务栈、
+配置结构本身只需在 `modbus_tcp_server_init()` 调用期间保持有效。请求/响应队列及其静态存储、任务栈、
 任务控制块和服务器对象必须在服务器任务的整个生命周期内保持有效。
 
 ### 3.2 调用顺序
@@ -92,13 +92,13 @@ MBAP `Length` 字段必须位于 `2..254`。完整 TCP ADU 的字节数为
 
 1. 初始化 RTU ADU 池、物理通道和 RTU 通道；
 2. 调用 `modbus_rtu_transaction_scheduler_init()`；
-3. 调用 `modbus_tcp_server_init()`，由服务器绑定调度器的高优先级队列；
-4. 由其他模块绑定调度器的低优先级请求和响应队列；
-5. 启动 RTU 调度器；
-6. 调用 `modbus_tcp_server_start()`。
+3. 由集成层创建高、低优先级请求和响应队列；
+4. 将两组队列分别绑定到调度器；
+5. 启动 RTU 调度器并确认调度任务创建成功；
+6. 通过配置传入高优先级请求和响应队列并调用 `modbus_tcp_server_init()`；该调用同时启动服务器任务。
 
-一个服务器对象只能成功初始化和启动一次。初始化或启动成功后，调用方不得
-直接修改服务器对象、内部客户端状态或内部队列。
+服务器对象必须预先零初始化且只能调用一次 `init()`。初始化成功后，调用方不得直接修改服务器对象、
+内部客户端状态或操作注入队列；队列只能由服务器和 RTU 调度器按本规范约定使用。
 
 ## 4. 公共函数
 
@@ -106,22 +106,20 @@ MBAP `Length` 字段必须位于 `2..254`。完整 TCP ADU 的字节数为
 
 ```c
 modbus_tcp_server_result_t modbus_tcp_server_init(modbus_tcp_server_t *server,
-                                                  modbus_tcp_server_config_t *config);
+                                                  const modbus_tcp_server_config_t *config);
 ```
 
 **函数行为**
 
-检查配置并初始化服务器对象。配置有效时，函数依次：
+检查配置并初始化、启动服务器。配置有效时，函数依次：
 
-1. 清零服务器对象并保存监听端口和 RTU 响应超时；
-2. 使用服务器对象内的静态存储创建长度为 1 的高优先级请求队列；
-3. 使用服务器对象内的静态存储创建长度为 1 的高优先级响应队列；
-4. 创建静态 TCP 服务器任务；新任务在收到启动通知前不会创建监听 socket；
-5. 将两个队列绑定到调度器的高优先级通道；
-6. 将服务器状态设置为 `INITIALIZED`。
+1. 清零服务器运行时字段并保存监听端口、RTU 响应超时以及两个外部队列句柄；
+2. 初始化 token、监听 socket 和所有客户端 socket 状态；
+3. 创建静态 TCP 服务器任务；新任务开始运行后立即尝试创建监听 socket；
+4. 将服务器状态设置为 `RUNNING`。
 
-只有全部静态资源创建成功后才绑定调度器。任一步失败时服务器均未成功初始化，
-不得调用 `start()`；已经创建的内部队列会在后续队列或任务创建失败时删除。
+服务器不创建、绑定、复位或删除注入的队列。任务创建失败时清除服务器保存的队列句柄，将状态设置为
+`FAILED` 并返回失败；调用方仍拥有队列及其静态存储。
 
 **参数**
 
@@ -130,36 +128,16 @@ modbus_tcp_server_result_t modbus_tcp_server_init(modbus_tcp_server_t *server,
 
 **返回值**
 
-- **`MODBUS_TCP_SERVER_OK`**：初始化成功，服务器处于 `INITIALIZED`。
+- **`MODBUS_TCP_SERVER_OK`**：初始化成功，服务器处于 `RUNNING`。
 - **`MODBUS_TCP_SERVER_INVALID_ARGUMENT`**：`server`、`config` 或任一必需配置
   字段非法。
-- **`MODBUS_TCP_SERVER_QUEUE_CREATE_FAILED`**：任一内部队列创建失败。
+- **`MODBUS_TCP_SERVER_INVALID_STATE`**：服务器对象不是零初始化的 `UNINITIALIZED` 状态，包括重复初始化或
+  任务创建失败后重试。
 - **`MODBUS_TCP_SERVER_TASK_CREATE_FAILED`**：服务器任务创建失败。
-
-### 4.2 `modbus_tcp_server_start`
-
-```c
-modbus_tcp_server_result_t modbus_tcp_server_start(modbus_tcp_server_t *server);
-```
-
-**函数行为**
-
-仅当服务器处于 `INITIALIZED` 时，将状态设置为 `STARTED` 并向服务器任务发送
-一次启动通知。函数不等待监听 socket 创建、网络链路建立或端口开始接受连接。
-
-**参数**
-
-- **`server`**：已经成功初始化且尚未启动的服务器；不得为空。
-
-**返回值**
-
-- **`MODBUS_TCP_SERVER_OK`**：启动通知已经发送。
-- **`MODBUS_TCP_SERVER_INVALID_ARGUMENT`**：`server` 为空。
-- **`MODBUS_TCP_SERVER_INVALID_STATE`**：服务器不处于 `INITIALIZED`，包括重复启动。
 
 ## 5. 监听与连接管理
 
-收到启动通知后，服务器创建 IPv4 TCP socket，绑定 `INADDR_ANY` 和配置端口，
+服务器任务开始运行后创建 IPv4 TCP socket，绑定 `INADDR_ANY` 和配置端口，
 以 backlog 1 开始监听，并将监听 socket 设置为非阻塞。任一步失败时关闭已有
 监听 socket，等待 50 ms 后重新尝试。
 
@@ -263,9 +241,9 @@ ADU 外，不释放已经转移给调度器的对象。
 ## 10. 并发与调用限制
 
 - 服务器任务是服务器对象及客户端状态的唯一运行时写入者。
-- `init()` 和 `start()` 只能由任务上下文按规定顺序调用，不得从 ISR 调用。
-- 调度器高优先级队列只能由本服务器绑定一次，并在服务器运行期间保持有效。
-- RTU 调度器必须在服务器 `start()` 前成功启动，使高优先级请求队列已经加入其
-  Queue Set。
-- 调用方必须持续保证 ADU 池、调度器、任务栈、任务控制块和服务器对象有效。
+- `init()` 只能由任务上下文调用，不得从 ISR 调用。
+- 调用方必须在 `init()` 前把注入的高优先级请求队列绑定到调度器一次，并在服务器运行期间保持请求、
+  响应队列及其存储有效。
+- RTU 调度器必须在服务器 `init()` 前成功启动，使高优先级请求队列已经加入其 Queue Set。
+- 调用方必须持续保证 ADU 池、调度器、队列、任务栈、任务控制块和服务器对象有效。
 - 当前实现不提供取消已提交 RTU 事务的机制。

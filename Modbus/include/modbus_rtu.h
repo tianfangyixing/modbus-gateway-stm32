@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "modbus_rtu_rs485_port.h"
 
 #define MODBUS_RTU_MAX_LENGTH 256U
 #define MODBUS_RTU_CRC_LENGTH UINT16_C(2)
@@ -33,20 +34,13 @@ typedef enum {
     MODBUS_RTU_QUANTITY_INVALID,
 } modbus_rtu_result_t;
 
-typedef int32_t (*modbus_rtu_read_fn)(void *context, uint8_t *buffer, uint16_t capacity, uint32_t timeout_ms);
-typedef int32_t (*modbus_rtu_write_fn)(void *context, const uint8_t *buffer, uint16_t count, uint32_t timeout_ms);
-
 typedef struct {
     void *context;
-    modbus_rtu_read_fn read;
-    modbus_rtu_write_fn write;
-    uint32_t baud_rate;
 } modbus_rtu_channel_t;
 
 typedef enum {
     MODBUS_RTU_CHANNEL_OK = 0,
     MODBUS_RTU_CHANNEL_INVALID_ARGUMENT,
-    MODBUS_RTU_CHANNEL_BAUD_RATE_INVALID
 } modbus_rtu_channel_result_t;
 
 typedef enum {
@@ -83,10 +77,7 @@ modbus_rtu_result_t modbus_rtu_decode_exception_response(const modbus_rtu_adu_t 
 
 modbus_rtu_channel_result_t modbus_rtu_channel_init(
     modbus_rtu_channel_t *channel,
-    void *context,
-    modbus_rtu_read_fn read,
-    modbus_rtu_write_fn write,
-    uint32_t baud_rate);
+    void *context);
 modbus_rtu_transaction_result_t modbus_rtu_transact(modbus_rtu_channel_t *channel, const modbus_rtu_adu_t *request, uint32_t response_timeout_ms, modbus_rtu_adu_t *response);
 
 #endif

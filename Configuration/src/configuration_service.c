@@ -4,6 +4,8 @@
 #include "external_flash.h"
 #include "memory_sections.h"
 
+#include "debug_log.h"
+
 #include "mbedtls/platform_util.h"
 
 #include <stdbool.h>
@@ -65,6 +67,138 @@ static configuration_service_state_t service_state;
 static bool persisted_configuration_exists;
 static uint8_t persisted_slot;
 static uint32_t persisted_generation;
+
+static const char *network_mode_name(uint8_t mode)
+{
+    switch (mode)
+    {
+        case CONFIGURATION_NETWORK_MODE_DHCP:
+            return "dhcp";
+
+        case CONFIGURATION_NETWORK_MODE_STATIC:
+            return "static";
+
+        default:
+            return "unknown";
+    }
+}
+
+static const char *frame_format_name(uint8_t frame_format)
+{
+    switch (frame_format)
+    {
+        case CONFIGURATION_FRAME_FORMAT_8N1:
+            return "8N1";
+
+        case CONFIGURATION_FRAME_FORMAT_8E1:
+            return "8E1";
+
+        case CONFIGURATION_FRAME_FORMAT_8O1:
+            return "8O1";
+
+        case CONFIGURATION_FRAME_FORMAT_8N2:
+            return "8N2";
+
+        default:
+            return "unknown";
+    }
+}
+
+static const char *endpoint_address_type_name(uint8_t type)
+{
+    switch (type)
+    {
+        case CONFIGURATION_ENDPOINT_ADDRESS_TYPE_HOSTNAME:
+            return "hostname";
+
+        case CONFIGURATION_ENDPOINT_ADDRESS_TYPE_IPV4:
+            return "ipv4";
+
+        default:
+            return "unknown";
+    }
+}
+
+static const char *mqtt_mode_name(uint8_t mode)
+{
+    switch (mode)
+    {
+        case CONFIGURATION_MQTT_MODE_DISABLED:
+            return "disabled";
+
+        case CONFIGURATION_MQTT_MODE_ENABLED:
+            return "enabled";
+
+        default:
+            return "unknown";
+    }
+}
+
+static const char *client_id_mode_name(uint8_t mode)
+{
+    switch (mode)
+    {
+        case CONFIGURATION_CLIENT_ID_MODE_DERIVED:
+            return "derived";
+
+        case CONFIGURATION_CLIENT_ID_MODE_EXPLICIT:
+            return "explicit";
+
+        default:
+            return "unknown";
+    }
+}
+
+static const char *mqtt_message_mode_name(uint8_t mode)
+{
+    switch (mode)
+    {
+        case CONFIGURATION_MQTT_MESSAGE_MODE_DISABLED:
+            return "disabled";
+
+        case CONFIGURATION_MQTT_MESSAGE_MODE_CUSTOM:
+            return "custom";
+
+        default:
+            return "unknown";
+    }
+}
+
+static const char *collection_source_name(uint8_t source)
+{
+    switch (source)
+    {
+        case CONFIGURATION_COLLECTION_SOURCE_COIL:
+            return "coil";
+
+        case CONFIGURATION_COLLECTION_SOURCE_DISCRETE_INPUT:
+            return "discrete_input";
+
+        case CONFIGURATION_COLLECTION_SOURCE_HOLDING_REGISTER:
+            return "holding_register";
+
+        case CONFIGURATION_COLLECTION_SOURCE_INPUT_REGISTER:
+            return "input_register";
+
+        default:
+            return "unknown";
+    }
+}
+
+static const char *data_type_name(uint8_t data_type)
+{
+    switch (data_type)
+    {
+        case CONFIGURATION_DATA_TYPE_UINT16:
+            return "uint16";
+
+        case CONFIGURATION_DATA_TYPE_INT16:
+            return "int16";
+
+        default:
+            return "unknown";
+    }
+}
 
 static uint32_t read_u32_le(const uint8_t *bytes)
 {
@@ -281,6 +415,149 @@ configuration_service_result_t configuration_service_init(void)
 
     result = load_configuration();
     service_state = result == CONFIGURATION_SERVICE_OK ? CONFIGURATION_SERVICE_READY : CONFIGURATION_SERVICE_FAILED;
+    if (result == CONFIGURATION_SERVICE_OK)
+    {
+        const configuration_t *configuration = &active_configuration;
+        uint8_t index;
+
+        debug_log_printf("\r\n[configuration] begin\r\n");
+        debug_log_printf("[configuration][network] mode=%s\r\n", network_mode_name(configuration->network.mode));
+        if (configuration->network.mode == CONFIGURATION_NETWORK_MODE_STATIC)
+        {
+            debug_log_printf("[configuration][network] ip_address=%u.%u.%u.%u\r\n",
+                              (unsigned int)ip4_addr1(&configuration->network.ip_address),
+                              (unsigned int)ip4_addr2(&configuration->network.ip_address),
+                              (unsigned int)ip4_addr3(&configuration->network.ip_address),
+                              (unsigned int)ip4_addr4(&configuration->network.ip_address));
+            debug_log_printf("[configuration][network] subnet_mask=%u.%u.%u.%u\r\n",
+                              (unsigned int)ip4_addr1(&configuration->network.subnet_mask),
+                              (unsigned int)ip4_addr2(&configuration->network.subnet_mask),
+                              (unsigned int)ip4_addr3(&configuration->network.subnet_mask),
+                              (unsigned int)ip4_addr4(&configuration->network.subnet_mask));
+            debug_log_printf("[configuration][network] gateway=%u.%u.%u.%u\r\n",
+                              (unsigned int)ip4_addr1(&configuration->network.gateway),
+                              (unsigned int)ip4_addr2(&configuration->network.gateway),
+                              (unsigned int)ip4_addr3(&configuration->network.gateway),
+                              (unsigned int)ip4_addr4(&configuration->network.gateway));
+            debug_log_printf("[configuration][network] dns_primary=%u.%u.%u.%u\r\n",
+                              (unsigned int)ip4_addr1(&configuration->network.dns_primary),
+                              (unsigned int)ip4_addr2(&configuration->network.dns_primary),
+                              (unsigned int)ip4_addr3(&configuration->network.dns_primary),
+                              (unsigned int)ip4_addr4(&configuration->network.dns_primary));
+            debug_log_printf("[configuration][network] dns_secondary=%u.%u.%u.%u\r\n",
+                              (unsigned int)ip4_addr1(&configuration->network.dns_secondary),
+                              (unsigned int)ip4_addr2(&configuration->network.dns_secondary),
+                              (unsigned int)ip4_addr3(&configuration->network.dns_secondary),
+                              (unsigned int)ip4_addr4(&configuration->network.dns_secondary));
+        }
+
+        debug_log_printf("[configuration][rtu] baud_rate=%u frame_format=%s first_byte_timeout_ms=%u\r\n",
+                          (unsigned int)configuration->rtu.baud_rate,
+                          frame_format_name(configuration->rtu.frame_format),
+                          (unsigned int)configuration->rtu.first_byte_timeout_ms);
+        debug_log_printf("[configuration][modbus_tcp] listen_port=%u\r\n",
+                          (unsigned int)configuration->modbus_tcp.listen_port);
+
+        for (index = 0U; index < 2U; index++)
+        {
+            const configuration_endpoint_address_t *server = &configuration->sntp.servers[index];
+
+            debug_log_printf("[configuration][sntp][%u] type=%s\r\n", (unsigned int)index,
+                              endpoint_address_type_name(server->type));
+            if (server->type == CONFIGURATION_ENDPOINT_ADDRESS_TYPE_HOSTNAME)
+            {
+                debug_log_printf("[configuration][sntp][%u] hostname=%.*s\r\n", (unsigned int)index,
+                                  (int)server->value.hostname.length,
+                                  (const char *)server->value.hostname.bytes);
+            }
+            else if (server->type == CONFIGURATION_ENDPOINT_ADDRESS_TYPE_IPV4)
+            {
+                debug_log_printf("[configuration][sntp][%u] ipv4=%u.%u.%u.%u\r\n", (unsigned int)index,
+                                  (unsigned int)ip4_addr1(&server->value.ipv4),
+                                  (unsigned int)ip4_addr2(&server->value.ipv4),
+                                  (unsigned int)ip4_addr3(&server->value.ipv4),
+                                  (unsigned int)ip4_addr4(&server->value.ipv4));
+            }
+        }
+
+        debug_log_printf("[configuration][mqtt] mode=%s\r\n", mqtt_mode_name(configuration->mqtt.mode));
+        if (configuration->mqtt.mode == CONFIGURATION_MQTT_MODE_ENABLED)
+        {
+            debug_log_printf("[configuration][mqtt] broker_address=%.*s broker_port=%u\r\n",
+                              (int)configuration->mqtt.broker_address.length,
+                              (const char *)configuration->mqtt.broker_address.bytes,
+                              (unsigned int)configuration->mqtt.broker_port);
+            debug_log_printf("[configuration][mqtt] client_id_mode=%s\r\n",
+                              client_id_mode_name(configuration->mqtt.client_id.mode));
+            if (configuration->mqtt.client_id.mode == CONFIGURATION_CLIENT_ID_MODE_EXPLICIT)
+            {
+                debug_log_printf("[configuration][mqtt] client_id=%.*s\r\n",
+                                  (int)configuration->mqtt.client_id.explicit_value.length,
+                                  (const char *)configuration->mqtt.client_id.explicit_value.bytes);
+            }
+            debug_log_printf("[configuration][mqtt] username=%.*s\r\n",
+                              (int)configuration->mqtt.username.length,
+                              (const char *)configuration->mqtt.username.bytes);
+            debug_log_printf("[configuration][mqtt] password=<redacted> length=%u\r\n",
+                              (unsigned int)configuration->mqtt.password.length);
+            debug_log_printf("[configuration][mqtt] keep_alive_seconds=%u\r\n",
+                              (unsigned int)configuration->mqtt.keep_alive_seconds);
+
+            debug_log_printf("[configuration][mqtt][online_message] mode=%s\r\n",
+                              mqtt_message_mode_name(configuration->mqtt.online_message.mode));
+            if (configuration->mqtt.online_message.mode == CONFIGURATION_MQTT_MESSAGE_MODE_CUSTOM)
+            {
+                debug_log_printf("[configuration][mqtt][online_message] topic=%.*s\r\n",
+                                  (int)configuration->mqtt.online_message.topic.length,
+                                  (const char *)configuration->mqtt.online_message.topic.bytes);
+                debug_log_printf("[configuration][mqtt][online_message] payload=%.*s\r\n",
+                                  (int)configuration->mqtt.online_message.payload.length,
+                                  (const char *)configuration->mqtt.online_message.payload.bytes);
+                debug_log_printf("[configuration][mqtt][online_message] qos=%u retain=%s\r\n",
+                                  (unsigned int)configuration->mqtt.online_message.qos,
+                                  configuration->mqtt.online_message.retain != 0U ? "true" : "false");
+            }
+
+            debug_log_printf("[configuration][mqtt][will_message] mode=%s\r\n",
+                              mqtt_message_mode_name(configuration->mqtt.will_message.mode));
+            if (configuration->mqtt.will_message.mode == CONFIGURATION_MQTT_MESSAGE_MODE_CUSTOM)
+            {
+                debug_log_printf("[configuration][mqtt][will_message] topic=%.*s\r\n",
+                                  (int)configuration->mqtt.will_message.topic.length,
+                                  (const char *)configuration->mqtt.will_message.topic.bytes);
+                debug_log_printf("[configuration][mqtt][will_message] payload=%.*s\r\n",
+                                  (int)configuration->mqtt.will_message.payload.length,
+                                  (const char *)configuration->mqtt.will_message.payload.bytes);
+                debug_log_printf("[configuration][mqtt][will_message] qos=%u retain=%s\r\n",
+                                  (unsigned int)configuration->mqtt.will_message.qos,
+                                  configuration->mqtt.will_message.retain != 0U ? "true" : "false");
+            }
+        }
+
+        debug_log_printf("[configuration][collection] point_count=%u\r\n",
+                          (unsigned int)configuration->collection.point_count);
+        for (index = 0U; index < configuration->collection.point_count; index++)
+        {
+            const configuration_collection_point_t *point = &configuration->collection.points[index];
+
+            debug_log_printf("[configuration][collection][%u] slave_address=%u source=%s address=%u\r\n",
+                              (unsigned int)index, (unsigned int)point->slave_address,
+                              collection_source_name(point->source), (unsigned int)point->address);
+            if (point->source == CONFIGURATION_COLLECTION_SOURCE_HOLDING_REGISTER ||
+                point->source == CONFIGURATION_COLLECTION_SOURCE_INPUT_REGISTER)
+            {
+                debug_log_printf("[configuration][collection][%u] data_type=%s\r\n", (unsigned int)index,
+                                  data_type_name(point->data_type));
+            }
+            debug_log_printf(
+                              "[configuration][collection][%u] poll_interval_ms=%u first_byte_timeout_ms=%u qos=%u\r\n",
+                              (unsigned int)index, (unsigned int)point->poll_interval_ms,
+                              (unsigned int)point->first_byte_timeout_ms, (unsigned int)point->qos);
+            debug_log_printf("[configuration][collection][%u] topic=%.*s\r\n", (unsigned int)index,
+                              (int)point->topic.length, (const char *)point->topic.bytes);
+        }
+        debug_log_printf("[configuration] end\r\n");
+    }
     return result;
 }
 

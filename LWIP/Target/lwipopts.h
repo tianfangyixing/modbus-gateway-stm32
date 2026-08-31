@@ -39,13 +39,15 @@
 
 #define LWIP_ALTCP_TLS_MBEDTLS 1
 
-#define LWIP_DEBUG 1
+// #define LWIP_DEBUG 1
 
-#define MQTT_DEBUG LWIP_DBG_OFF
-#define ALTCP_MBEDTLS_DEBUG LWIP_DBG_ON
-#define ALTCP_MBEDTLS_MEM_DEBUG LWIP_DBG_ON
+// #define MQTT_DEBUG LWIP_DBG_OFF
+// #define ALTCP_MBEDTLS_DEBUG LWIP_DBG_ON
+// #define ALTCP_MBEDTLS_MEM_DEBUG LWIP_DBG_ON
 
 #define ALTCP_MBEDTLS_RNG_FN mbedtls_entropy_func
+
+#define MQTT_OUTPUT_RINGBUF_SIZE 512
 
 /* USER CODE END 0 */
 
@@ -65,6 +67,8 @@
 
 /* LwIP Stack Parameters (modified compared to initialization value in opt.h) -*/
 /* Parameters set in STM32CubeMX LwIP Configuration GUI -*/
+/*----- Value in opt.h for LWIP_DHCP: 0 -----*/
+#define LWIP_DHCP 1
 /*----- Value in opt.h for LWIP_DNS: 0 -----*/
 #define LWIP_DNS 1
 /*----- Default Value for MEMP_NUM_UDP_PCB: 4 ---*/
@@ -79,7 +83,7 @@
 #define MEMP_NUM_PBUF 30
 /*----- Default Value for MEMP_NUM_TCP_SEG: 16 ---*/
 #define MEMP_NUM_TCP_SEG 40
-/*----- Default Value for MEMP_NUM_SYS_TIMEOUT: 4 ---*/
+/*----- Default Value for MEMP_NUM_SYS_TIMEOUT: 6 ---*/
 #define MEMP_NUM_SYS_TIMEOUT 10
 /*----- Default Value for MEMP_NUM_NETCONN: 4 ---*/
 #define MEMP_NUM_NETCONN 8
@@ -106,7 +110,7 @@
 /*----- Value in opt.h for LWIP_NETIF_LINK_CALLBACK: 0 -----*/
 #define LWIP_NETIF_LINK_CALLBACK 1
 /*----- Value in opt.h for TCPIP_THREAD_STACKSIZE: 0 -----*/
-#define TCPIP_THREAD_STACKSIZE 3072
+#define TCPIP_THREAD_STACKSIZE 3840
 /*----- Value in opt.h for TCPIP_THREAD_PRIO: 1 -----*/
 #define TCPIP_THREAD_PRIO 24
 /*----- Value in opt.h for TCPIP_MBOX_SIZE: 0 -----*/

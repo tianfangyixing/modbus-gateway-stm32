@@ -1,6 +1,7 @@
 #include "modbus_tcp_server.h"
 #include "modbus_common.h"
 #include "system_time.h"
+#include "configuration_service.h"
 
 #define MODBUS_TCP_MIN_MBAP_LENGTH UINT16_C(2)
 #define MODBUS_TCP_MAX_MBAP_LENGTH UINT16_C(254)
@@ -261,7 +262,7 @@ static void client_submit_rtu_request(modbus_tcp_server_t *server, size_t client
 {
     modbus_tcp_server_client_t *client = &server->clients[client_index];
 
-    if (xQueueSend(server->high_request_queue, &client->rtu_request, 0) != pdPASS)
+    if (xQueueSend(server->request_queue, &client->rtu_request, 0) != pdPASS)
     {
         return;
     }
@@ -275,14 +276,14 @@ static void client_recv_rtu_response(modbus_tcp_server_t *server, size_t client_
     modbus_tcp_server_client_t *client = &server->clients[client_index];
     modbus_rtu_transaction_scheduler_response_t response;
 
-    if (xQueuePeek(server->high_response_queue, &response, 0) == pdPASS)
+    if (xQueuePeek(server->response_queue, &response, 0) == pdPASS)
     {
         if (response.token != client->rtu_request.token)
         {
             return;
         }
 
-        xQueueReceive(server->high_response_queue, &response, 0);
+        xQueueReceive(server->response_queue, &response, 0);
 
         uint8_t exception_code = 0x00;
 
@@ -409,8 +410,6 @@ static bool client_should_send(modbus_tcp_server_client_t *client)
 static void tcp_task(void *argument)
 {
     modbus_tcp_server_t *server = argument;
-
-    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
     // create server sokcet
 
@@ -540,7 +539,7 @@ static void tcp_task(void *argument)
         clean_expired_response:
         {
             modbus_rtu_transaction_scheduler_response_t response;
-            if (xQueuePeek(server->high_response_queue, &response, 0) == pdPASS)
+            if (xQueuePeek(server->response_queue, &response, 0) == pdPASS)
             {
                 bool should_dropped = true;
                 for (size_t i = 0; i < MODBUS_TCP_SERVER_MAX_CLIENTS; i++)
@@ -556,7 +555,7 @@ static void tcp_task(void *argument)
 
                 if (should_dropped)
                 {
-                    xQueueReceive(server->high_response_queue, &response, 0);
+                    xQueueReceive(server->response_queue, &response, 0);
                     modbus_rtu_adu_pool_release(response.rtu_adu);
                 }
             }
@@ -565,13 +564,17 @@ static void tcp_task(void *argument)
 }
 
 modbus_tcp_server_result_t modbus_tcp_server_init(modbus_tcp_server_t *server,
-                                                  modbus_tcp_server_config_t *config)
+                                                  const modbus_tcp_server_config_t *config)
 {
     if (server == NULL || config == NULL)
     {
         return MODBUS_TCP_SERVER_INVALID_ARGUMENT;
     }
-    if (config->transaction_scheduler == NULL || config->listen_port == 0U ||
+    if (server->state != MODBUS_TCP_SERVER_STATE_UNINITIALIZED)
+    {
+        return MODBUS_TCP_SERVER_INVALID_STATE;
+    }
+    if (config->request_queue == NULL || config->response_queue == NULL || config->listen_port == 0U ||
         config->response_timeout_ms < MODBUS_TCP_RESPONSE_TIMEOUT_MIN_MS ||
         config->response_timeout_ms > MODBUS_TCP_RESPONSE_TIMEOUT_MAX_MS ||
         config->task_name == NULL || config->task_stack == NULL ||
@@ -584,27 +587,9 @@ modbus_tcp_server_result_t modbus_tcp_server_init(modbus_tcp_server_t *server,
     memset(server, 0, sizeof(*server));
     server->listener_port = config->listen_port;
     server->response_timeout_ms = config->response_timeout_ms;
-
-    server->high_request_queue = xQueueCreateStatic(
-        (UBaseType_t)1, (UBaseType_t)sizeof(modbus_rtu_transaction_scheduler_request_t),
-        server->high_request_queue_storage, &server->high_request_queue_buffer);
-
-    if (server->high_request_queue == NULL)
-    {
-        return MODBUS_TCP_SERVER_QUEUE_CREATE_FAILED;
-    }
-
-    server->high_response_queue = xQueueCreateStatic(
-        (UBaseType_t)1, (UBaseType_t)sizeof(modbus_rtu_transaction_scheduler_response_t),
-        server->high_response_queue_storage, &server->high_response_queue_buffer);
-
-    if (server->high_response_queue == NULL)
-    {
-        vQueueDelete(server->high_request_queue);
-        return MODBUS_TCP_SERVER_QUEUE_CREATE_FAILED;
-    }
-
-    server->available_token = 0;
+    server->request_queue = config->request_queue;
+    server->response_queue = config->response_queue;
+    server->available_token = 0U;
     server->server_socket = -1;
 
     for (uint8_t i = 0; i < MODBUS_TCP_SERVER_MAX_CLIENTS; i++)
@@ -616,31 +601,12 @@ modbus_tcp_server_result_t modbus_tcp_server_init(modbus_tcp_server_t *server,
                                             config->task_priority, config->task_stack, config->task_buffer);
     if (server->task_handle == NULL)
     {
-        vQueueDelete(server->high_request_queue);
-        vQueueDelete(server->high_response_queue);
+        server->request_queue = NULL;
+        server->response_queue = NULL;
+        server->state = MODBUS_TCP_SERVER_STATE_FAILED;
         return MODBUS_TCP_SERVER_TASK_CREATE_FAILED;
     }
 
-    modbus_rtu_transaction_scheduler_bind_queue(
-        config->transaction_scheduler, MODBUS_RTU_TRANSACTION_SCHEDULER_PRIORITY_HIGH,
-        server->high_request_queue, server->high_response_queue);
-
-    server->state = MODBUS_TCP_SERVER_STATE_INITIALIZED;
-    return MODBUS_TCP_SERVER_OK;
-}
-
-modbus_tcp_server_result_t modbus_tcp_server_start(modbus_tcp_server_t *server)
-{
-    if (server == NULL)
-    {
-        return MODBUS_TCP_SERVER_INVALID_ARGUMENT;
-    }
-    if (server->state != MODBUS_TCP_SERVER_STATE_INITIALIZED)
-    {
-        return MODBUS_TCP_SERVER_INVALID_STATE;
-    }
-
-    server->state = MODBUS_TCP_SERVER_STATE_STARTED;
-    xTaskNotifyGive(server->task_handle);
+    server->state = MODBUS_TCP_SERVER_STATE_RUNNING;
     return MODBUS_TCP_SERVER_OK;
 }
