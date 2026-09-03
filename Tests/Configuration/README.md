@@ -123,10 +123,10 @@ canary。失败用例不读取规范未定义的 configuration、payload 或 `pa
 | generation 相同、半圈歧义初始化失败及仅一个配置有效 | 两个 `test_init_*ambiguous*` 测试组 |
 | 全部读取阶段及 codec 资源故障初始化失败 | `test_init_reports_storage_error_for_read_failures`、`test_init_reports_codec_resource_failure` |
 | write 生命周期和参数错误 | `test_write_rejects_lifecycle_and_argument_errors` |
-| payload/header/magic 顺序、active 不变、重启生效 | `test_write_commits_in_order_without_changing_active` |
+| header 与 payload/magic 两阶段顺序、active 不变、重启生效 | `test_write_commits_in_order_without_changing_active` |
 | 相同 payload 每次提交并交替槽 | `test_repeated_identical_writes_always_commit_and_alternate` |
 | write 拒绝不支持的 schema、畸形结构和无效模型，且不访问 Flash | `test_write_rejects_invalid_payload_without_storage_side_effects` |
 | write 解码资源不足、不访问 Flash 及恢复后重试 | `test_write_reports_codec_resource_failure_without_storage_side_effects` |
 | 空 Flash 初始化状态直接驱动首次写入且不重扫 | `test_write_uses_empty_init_state_without_rescanning` |
-| 擦除、读取、三阶段编程、回读校验故障及同运行期重试 | 三个 `test_write_*preserve*` 测试组、`test_failed_write_retries_same_slot_and_generation_without_reboot` |
+| 擦除、读取、两阶段编程、回读校验故障及同运行期重试 | 三个 `test_write_*preserve*` 测试组、`test_failed_write_retries_same_slot_and_generation_without_reboot` |
 | magic 已提交但最终 read 失败 | `test_final_read_error_keeps_old_slot_even_if_new_record_committed` |

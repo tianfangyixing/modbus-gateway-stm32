@@ -1392,6 +1392,11 @@
           </GroupOption>
           <Files>
             <File>
+              <FileName>lwip_random.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../LWIP/Target/lwip_random.c</FilePath>
+            </File>
+            <File>
               <FileName>ethernetif.c</FileName>
               <FileType>1</FileType>
               <FilePath>../LWIP/Target/ethernetif.c</FilePath>
@@ -1446,11 +1451,6 @@
                   </Cads>
                 </FileArmAds>
               </FileOption>
-            </File>
-            <File>
-              <FileName>lwip_random.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../LWIP/Target/lwip_random.c</FilePath>
             </File>
           </Files>
         </Group>

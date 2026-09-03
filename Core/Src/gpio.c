@@ -56,6 +56,9 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(ETH_NRST_GPIO_Port, ETH_NRST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(W25_CS_GPIO_Port, W25_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : ETH_NRST_Pin */
@@ -64,6 +67,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(ETH_NRST_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : RS485_DE_Pin */
+  GPIO_InitStruct.Pin = RS485_DE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(RS485_DE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : W25_CS_Pin */
   GPIO_InitStruct.Pin = W25_CS_Pin;

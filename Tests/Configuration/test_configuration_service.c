@@ -300,18 +300,15 @@ static void test_write_commits_in_order_without_changing_active(void)
     TEST_ASSERT_EQUAL_PTR(active_before, configuration_service_active());
     assert_configuration_equal(&old_configuration, configuration_service_active());
     TEST_ASSERT_EQUAL_UINT32(2U, configuration_service_test_erase_count());
-    TEST_ASSERT_EQUAL_UINT32(3U, configuration_service_test_program_count());
+    TEST_ASSERT_EQUAL_UINT32(2U, configuration_service_test_program_count());
     TEST_ASSERT_EQUAL_UINT32(1U, configuration_service_test_read_count());
-    TEST_ASSERT_EQUAL_HEX32(CONFIGURATION_SERVICE_TEST_SLOT_B_ADDRESS +
-                                CONFIGURATION_SERVICE_TEST_SLOT_HEADER_SIZE,
-                            configuration_service_test_program_address(1U));
-    TEST_ASSERT_EQUAL_UINT32(new_length, configuration_service_test_program_length(1U));
     TEST_ASSERT_EQUAL_HEX32(CONFIGURATION_SERVICE_TEST_SLOT_B_ADDRESS + 4U,
-                            configuration_service_test_program_address(2U));
-    TEST_ASSERT_EQUAL_UINT32(16U, configuration_service_test_program_length(2U));
+                            configuration_service_test_program_address(1U));
+    TEST_ASSERT_EQUAL_UINT32(new_length + CONFIGURATION_SERVICE_TEST_SLOT_HEADER_SIZE - 4U,
+                             configuration_service_test_program_length(1U));
     TEST_ASSERT_EQUAL_HEX32(CONFIGURATION_SERVICE_TEST_SLOT_B_ADDRESS,
-                            configuration_service_test_program_address(3U));
-    TEST_ASSERT_EQUAL_UINT32(4U, configuration_service_test_program_length(3U));
+                            configuration_service_test_program_address(2U));
+    TEST_ASSERT_EQUAL_UINT32(4U, configuration_service_test_program_length(2U));
     TEST_ASSERT_EQUAL_UINT32(0U,
                              configuration_service_test_slot_generation(CONFIGURATION_SERVICE_TEST_SLOT_B));
 
@@ -341,8 +338,7 @@ static void test_write_replaces_newer_invalid_slot_from_selected_generation(void
 
     TEST_ASSERT_EQUAL_INT(CONFIGURATION_SERVICE_OK, configuration_service_write(payload_b, new_length));
 
-    TEST_ASSERT_EQUAL_HEX32(CONFIGURATION_SERVICE_TEST_SLOT_B_ADDRESS +
-                                CONFIGURATION_SERVICE_TEST_SLOT_HEADER_SIZE,
+    TEST_ASSERT_EQUAL_HEX32(CONFIGURATION_SERVICE_TEST_SLOT_B_ADDRESS + 4U,
                             configuration_service_test_program_address(1U));
     TEST_ASSERT_EQUAL_UINT32(UINT32_C(0),
                              configuration_service_test_slot_generation(CONFIGURATION_SERVICE_TEST_SLOT_B));
@@ -367,7 +363,7 @@ static void test_repeated_identical_writes_always_commit_and_alternate(void)
     TEST_ASSERT_EQUAL_INT(CONFIGURATION_SERVICE_OK, configuration_service_write(payload_a, payload_length));
 
     TEST_ASSERT_EQUAL_UINT32(6U, configuration_service_test_erase_count());
-    TEST_ASSERT_EQUAL_UINT32(9U, configuration_service_test_program_count());
+    TEST_ASSERT_EQUAL_UINT32(6U, configuration_service_test_program_count());
     TEST_ASSERT_EQUAL_UINT32(2U,
                              configuration_service_test_slot_generation(CONFIGURATION_SERVICE_TEST_SLOT_A));
     TEST_ASSERT_EQUAL_UINT32(1U,
@@ -415,7 +411,7 @@ static void test_write_rejects_invalid_payload_without_storage_side_effects(void
     encode_configuration(&new_configuration, payload_b, &new_length);
     TEST_ASSERT_EQUAL_INT(CONFIGURATION_SERVICE_OK, configuration_service_write(payload_b, new_length));
     TEST_ASSERT_EQUAL_UINT32(2U, configuration_service_test_erase_count());
-    TEST_ASSERT_EQUAL_UINT32(3U, configuration_service_test_program_count());
+    TEST_ASSERT_EQUAL_UINT32(2U, configuration_service_test_program_count());
     TEST_ASSERT_EQUAL_UINT32(1U, configuration_service_test_read_count());
     TEST_ASSERT_EQUAL_UINT32(0U,
                              configuration_service_test_slot_generation(CONFIGURATION_SERVICE_TEST_SLOT_B));
@@ -448,7 +444,7 @@ static void test_write_reports_codec_resource_failure_without_storage_side_effec
 
     TEST_ASSERT_EQUAL_INT(CONFIGURATION_SERVICE_OK, configuration_service_write(payload_a, payload_length));
     TEST_ASSERT_EQUAL_UINT32(2U, configuration_service_test_erase_count());
-    TEST_ASSERT_EQUAL_UINT32(3U, configuration_service_test_program_count());
+    TEST_ASSERT_EQUAL_UINT32(2U, configuration_service_test_program_count());
     TEST_ASSERT_EQUAL_UINT32(1U, configuration_service_test_read_count());
     TEST_ASSERT_EQUAL_UINT32(0U,
                              configuration_service_test_slot_generation(CONFIGURATION_SERVICE_TEST_SLOT_A));
@@ -472,7 +468,7 @@ static void test_write_uses_empty_init_state_without_rescanning(void)
 
     TEST_ASSERT_EQUAL_UINT32(1U, configuration_service_test_read_count());
     TEST_ASSERT_EQUAL_UINT32(2U, configuration_service_test_erase_count());
-    TEST_ASSERT_EQUAL_UINT32(3U, configuration_service_test_program_count());
+    TEST_ASSERT_EQUAL_UINT32(2U, configuration_service_test_program_count());
     TEST_ASSERT_EQUAL_UINT32(0U,
                              configuration_service_test_slot_generation(CONFIGURATION_SERVICE_TEST_SLOT_A));
     assert_defaults_active();
@@ -529,7 +525,7 @@ static void test_write_failures_before_commit_preserve_old_configuration(void)
         assert_failed_write_preserves_old(WRITE_FAILURE_ERASE, failed_call);
     }
 
-    for (failed_call = 1U; failed_call <= 3U; failed_call++)
+    for (failed_call = 1U; failed_call <= 2U; failed_call++)
     {
         assert_failed_write_preserves_old(WRITE_FAILURE_PROGRAM, failed_call);
     }
@@ -562,8 +558,7 @@ static void test_failed_write_retries_same_slot_and_generation_without_reboot(vo
     configuration_service_test_operation_reset();
     TEST_ASSERT_EQUAL_INT(CONFIGURATION_SERVICE_OK, configuration_service_write(payload_b, new_length));
 
-    TEST_ASSERT_EQUAL_HEX32(CONFIGURATION_SERVICE_TEST_SLOT_B_ADDRESS +
-                                CONFIGURATION_SERVICE_TEST_SLOT_HEADER_SIZE,
+    TEST_ASSERT_EQUAL_HEX32(CONFIGURATION_SERVICE_TEST_SLOT_B_ADDRESS + 4U,
                             configuration_service_test_program_address(1U));
     TEST_ASSERT_EQUAL_UINT32(UINT32_C(2),
                              configuration_service_test_slot_generation(CONFIGURATION_SERVICE_TEST_SLOT_B));

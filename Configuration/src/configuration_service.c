@@ -372,13 +372,7 @@ static configuration_service_result_t write_slot(uint8_t slot_index, uint32_t ge
     memcpy(workspace, expected_header, CONFIGURATION_SLOT_HEADER_SIZE);
     memcpy(&workspace[CONFIGURATION_SLOT_HEADER_SIZE], payload, payload_length);
 
-    if (external_flash_program(address + CONFIGURATION_SLOT_HEADER_SIZE, &workspace[CONFIGURATION_SLOT_HEADER_SIZE], payload_length) !=
-        EXTERNAL_FLASH_RESULT_OK)
-    {
-        return CONFIGURATION_SERVICE_IO_ERROR;
-    }
-
-    if (external_flash_program(address + 4U, &workspace[4], CONFIGURATION_SLOT_HEADER_SIZE - 4U) !=
+    if (external_flash_program(address + 4U, &workspace[4], payload_length + CONFIGURATION_SLOT_HEADER_SIZE - 4U) !=
         EXTERNAL_FLASH_RESULT_OK)
     {
         return CONFIGURATION_SERVICE_IO_ERROR;

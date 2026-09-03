@@ -10,6 +10,7 @@
 #include "modbus_rtu_rs485_port.h"
 #include "tim.h"
 #include "usart.h"
+#include "main.h"
 #include "configuration.h"
 
 #define MAX_WAITING_REMAINING_RESPONSE_MS (5000)
@@ -18,6 +19,7 @@
 typedef enum
 {
     RS485_PHASE_IDLE = 0,
+    RS485_PHASE_WAITING_TX_READY,
     RS485_PHASE_TRANSMITTING,
     RS485_PHASE_RECEIVING,
 } rs485_phase_t;
@@ -135,7 +137,7 @@ void rs485_uart_tx_complete_callback(UART_HandleTypeDef *huart)
 
     rx_length = 0;
     phase = RS485_PHASE_RECEIVING;
-    __HAL_UART_CLEAR_OREFLAG(&huart3);
+    HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
     if (HAL_UART_Receive_IT(&huart3, &rx_buffer[rx_length], 1) != HAL_OK)
     {
         received_successful = false;
@@ -218,11 +220,20 @@ void rs485_uart_error_callback(UART_HandleTypeDef *huart)
 /* tim7中断优先级与uart3相等 */
 void rs485_t35_elapsed_callback(TIM_HandleTypeDef *htim)
 {
-    BaseType_t xHigherPriorityTaskWoken = false;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-    received_successful = true;
-    HAL_UART_AbortReceive(&huart3);
-    xSemaphoreGiveFromISR(recv_completed_semaphore, &xHigherPriorityTaskWoken);
+    if(phase == RS485_PHASE_WAITING_TX_READY)
+    {
+        xSemaphoreGiveFromISR(send_completed_semaphore, &xHigherPriorityTaskWoken);
+    }
+    else if(phase == RS485_PHASE_RECEIVING)
+    {
+        received_successful = true;
+        HAL_UART_AbortReceive(&huart3);
+        xSemaphoreGiveFromISR(recv_completed_semaphore, &xHigherPriorityTaskWoken);
+    }
+
+    
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
@@ -231,6 +242,8 @@ void modbus_rtu_rs485_port_init(uint32_t configured_baud_rate, uint8_t configure
     send_completed_semaphore = xSemaphoreCreateBinaryStatic(&send_completed_semaphore_buffer);
     recv_completed_semaphore = xSemaphoreCreateBinaryStatic(&recv_completed_semaphore_buffer);
     first_byte_semaphore = xSemaphoreCreateBinaryStatic(&first_byte_semaphore_buffer);
+
+    HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
 
     huart3.Init.BaudRate = configured_baud_rate;
     huart3.Init.Mode = UART_MODE_TX_RX;
@@ -305,14 +318,27 @@ modbus_rtu_rs485_port_result_t modbus_rtu_rs485_port_transceive(void *context, c
     xSemaphoreTake(send_completed_semaphore, 0U);
     xSemaphoreTake(recv_completed_semaphore, 0U);
     xSemaphoreTake(first_byte_semaphore, 0U);
+
     rx_buffer = response;
 
     // send
+    phase = RS485_PHASE_WAITING_TX_READY;
+    HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_SET);
+    timer_set(50); // 等待50us，确保MAX485转换为发送状态
+    __HAL_UART_CLEAR_OREFLAG(&huart3);
+    if (xSemaphoreTake(send_completed_semaphore, 5) != pdTRUE)
+    {
+        timer_stop();
+        HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
+        phase = RS485_PHASE_IDLE;
+        return MODBUS_RTU_RS485_PORT_RESULT_UART_ERROR;
+    }
     phase = RS485_PHASE_TRANSMITTING;
     HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(&huart3, request, request_length);
     if (status != HAL_OK)
     {
         phase = RS485_PHASE_IDLE;
+        HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
         return MODBUS_RTU_RS485_PORT_RESULT_UART_ERROR;
     }
 
@@ -323,6 +349,7 @@ modbus_rtu_rs485_port_result_t modbus_rtu_rs485_port_transceive(void *context, c
         HAL_UART_AbortTransmit(&huart3);
         HAL_UART_AbortReceive(&huart3);
         timer_stop();
+        HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
         phase = RS485_PHASE_IDLE;
         return MODBUS_RTU_RS485_PORT_RESULT_UART_ERROR;
     }
@@ -330,6 +357,7 @@ modbus_rtu_rs485_port_result_t modbus_rtu_rs485_port_transceive(void *context, c
     if (!transmit_successful)
     {
         phase = RS485_PHASE_IDLE;
+        HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
         return MODBUS_RTU_RS485_PORT_RESULT_UART_ERROR;
     }
 
