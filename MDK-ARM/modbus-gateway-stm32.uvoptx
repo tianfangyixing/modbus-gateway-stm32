@@ -162,6 +162,22 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
+          <LineNumber>325</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>..\Modbus\src\modbus_rtu_rs485_port.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
           <LineNumber>340</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>134356098</Address>
@@ -176,7 +192,7 @@
           <Expression>\\modbus_gateway_stm32\../Modbus/src/modbus_rtu_rs485_port.c\340</Expression>
         </Bp>
         <Bp>
-          <Number>1</Number>
+          <Number>2</Number>
           <Type>0</Type>
           <LineNumber>323</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -190,6 +206,22 @@
           <Filename>..\Modbus\src\modbus_rtu_rs485_port.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\modbus_gateway_stm32\../Modbus/src/modbus_rtu_rs485_port.c\323</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>341</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>..\Modbus\src\modbus_rtu_rs485_port.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
