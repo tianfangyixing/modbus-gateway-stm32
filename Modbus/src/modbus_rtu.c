@@ -593,7 +593,7 @@ modbus_rtu_transaction_result_t modbus_rtu_transact(modbus_rtu_channel_t *channe
         return MODBUS_RTU_TRANSACTION_INVALID_ARGUMENT;
     }
 
-    uint16_t recv_len;
+    uint16_t recv_len = 0;
 
     modbus_rtu_rs485_port_result_t result =  modbus_rtu_rs485_port_transceive(channel->context, request->data, request->length,
                                                                                 response->data, response_timeout_ms, &recv_len);
