@@ -130,6 +130,8 @@ Configuration Payload 是本次启动正在使用的 Active Configuration。失�
 | 12 | 10 | `microseconds` | `u32 LE` | 当前秒内微秒 |
 | 16 | 14 | `mqtt_state` | `u8` | MQTT Publisher 状态 |
 
+SNTP 未同步时，不读取 RTC，`unix_seconds` 和 `microseconds` 均为 0；已同步但读取时间失败时，这两个字段也为 0。
+
 `mqtt_state` 取值：
 
 | 值 | 状态 |
@@ -151,15 +153,13 @@ Configuration Payload 是本次启动正在使用的 Active Configuration。失�
 设备必须先完成 `RESTART_RESPONSE(OK)` 的异步发送，再在 task context 中重启。session 关闭、USB reset 或
 disconnect 会取消尚未执行的重启。
 
-## 6. Transaction 与重复请求
+## 6. Transaction 与 Session
 
 - 主机在一个 Management Session 内同时只能有一个未完成请求。
 - `transaction_id` 是任意 `u32`，响应必须沿用请求 ID。
-- 当前请求未完成时，收到相同 ID 会去重，不重复执行命令。
-- 响应发送完成后，相同 ID 会逐字节重放缓存响应；message type 和 payload 不参与重复判断。
 - 当前请求未完成时收到不同 ID，设备静默丢弃，不排队，也不返回 `BUSY`。
-- 一个 transaction 完成后，可以使用新的 ID 发起下一请求。
-- session close/open 会清除 parser、transaction、响应缓存和待重启状态；新 session 可以重新使用旧 ID。
+- 一个 transaction 完成后，可以发起下一请求。
+- session close/open 会清除 parser、当前 transaction 和待重启状态。
 - `CDC_Init` 打开 session；`CDC_DeInit`、USB reset 或 disconnect 关闭 session；DTR 不参与 session 语义。
 
 ## 7. 字节流解析规则
@@ -169,8 +169,6 @@ disconnect 会取消尚未执行的重启。
 - parser 使用滚动 `MBGW` 匹配，允许 magic 跨 callback，并跳过 magic 前的噪声。
 - magic 错误、payload 超过 8192 字节、CRC 错误或帧未完成时，不执行命令，也不发送线路错误响应。
 - 超长声明或坏 CRC 后，parser 继续搜索后续合法 `MBGW` 帧。
-- 未完成帧使用 2000 ms inter-byte timeout；相邻 USB callback 到达时间差达到 2000 ms 时，先丢弃旧内容，
-  再从新到达字节搜索 magic。超时不发送响应。
 - session 结束时丢弃尚未完成的半帧。
 
 ## 8. 完整请求示例

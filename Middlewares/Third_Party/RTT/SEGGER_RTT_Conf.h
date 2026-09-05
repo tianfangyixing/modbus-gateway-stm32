@@ -28,13 +28,16 @@ Purpose : User configuration file for RTT.
 **********************************************************************
 */
 
-#include "FreeRTOSConfig.h"
 
-#define SEGGER_RTT_MAX_NUM_UP_BUFFERS (1)
-#define SEGGER_RTT_MAX_NUM_DOWN_BUFFERS (1)
+#define SEGGER_RTT_MAX_NUM_UP_BUFFERS (2)
+#define SEGGER_RTT_MAX_NUM_DOWN_BUFFERS (2)
+#define SEGGER_SYSVIEW_RTT_CHANNEL          (1)
+#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE      (4096)
 #define SEGGER_RTT_PRINTF_BUFFER_SIZE (128)
   #define BUFFER_SIZE_UP                            (4096)
 #define SEGGER_RTT_MAX_INTERRUPT_PRIORITY configMAX_SYSCALL_INTERRUPT_PRIORITY
+
+#include "FreeRTOSConfig.h"
 
 #endif
 /*************************** End of file ****************************/

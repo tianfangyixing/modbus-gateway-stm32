@@ -37,7 +37,7 @@ static StaticSemaphore_t first_byte_semaphore_buffer;
 
 
 static volatile uint16_t rx_length = 0;
-static uint8_t *volatile rx_buffer;
+static volatile uint8_t *volatile rx_buffer;
 
 static uint32_t baud_rate;
 static uint8_t frame_format;

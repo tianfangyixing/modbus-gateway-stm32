@@ -9,6 +9,7 @@
 - GCC 15.2.0，目标为 `x86_64-w64-mingw32`
 - CMake/CTest 4.3.2
 - GNU Make 4.4.1
+- pthread（本机由 MinGW winpthreads 提供，用于 Management 任务调度替身）
 
 ```powershell
 $hostTestBuild = Join-Path $env:TEMP ("modbus-gateway-host-tests-" + [guid]::NewGuid().ToString("N"))
@@ -76,7 +77,7 @@ Flash 的 `1 -> 0` 编程约束及部分编程失败，不进入固件工程；�
 
 Management 测试直接链接 `Management/src/management_frame.c` 和 `Management/src/management_transport.c`。
 `support/management/` 只替换 FreeRTOS tick/通知、USB CDC、Configuration、SNTP、MQTT、LwIP netif、日志与
-系统复位这些硬件或调度边界。CRC、流式 parser、transaction/session、响应缓存和重试状态机均使用生产实现。
+系统复位这些硬件或调度边界。CRC、流式 parser、transaction/session 和重试状态机均使用生产实现。
 用例与摘要条款的映射见 [Management/README.md](Management/README.md)。
 
 MQTT 测试以专用测试宏只编译 `MQTT/src/mqtt_publisher.c` 内部的纯 UID 编码逻辑，验证三个 32-bit UID word

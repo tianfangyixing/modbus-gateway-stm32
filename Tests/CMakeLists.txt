@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(modbus_gateway_host_tests C)
 
 include(CTest)
+find_package(Threads REQUIRED)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -85,6 +86,8 @@ add_library(management_transport_test_adapter STATIC
     support/management/management_transport_test_adapter.c
 )
 
+target_link_libraries(management_transport_test_adapter PUBLIC Threads::Threads)
+
 target_compile_options(management_transport_test_adapter PRIVATE
     -Wall
     -Wextra
@@ -130,7 +133,7 @@ target_link_libraries(management_transport_tests PRIVATE
 )
 
 add_test(NAME management_transport_tests COMMAND management_transport_tests)
-set_tests_properties(management_transport_tests PROPERTIES LABELS "management;transport")
+set_tests_properties(management_transport_tests PROPERTIES LABELS "management;transport" TIMEOUT 30)
 
 add_library(configuration_runtime STATIC
     "${REPOSITORY_ROOT}/Configuration/src/configuration.c"

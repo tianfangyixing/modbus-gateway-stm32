@@ -225,21 +225,6 @@ void StartDefaultTask(void *argument)
   modbus_gateway_app_init();
   debug_log_printf("[boot] Modbus gateway ready\r\n");
 
-  if (management_initialization_result == MANAGEMENT_TRANSPORT_OK)
-  {
-    management_transport_result_t management_activation_result = management_transport_activate();
-
-    if (management_activation_result == MANAGEMENT_TRANSPORT_OK)
-    {
-      debug_log_printf("[boot] Management transport active\r\n");
-    }
-    else
-    {
-      debug_log_printf("[boot] Management transport activation failed, result=%d\r\n",
-                       (int)management_activation_result);
-    }
-  }
-
   while (1)
   {
 

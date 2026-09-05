@@ -32,6 +32,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "debug_log.h"
+#include "SEGGER_SYSVIEW.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,15 +85,22 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  debug_log_init();
-  debug_log_printf("\r\n[boot] reset complete, RTT initialized\r\n");
+	
+
+	
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  debug_log_printf("[boot] system clock configured\r\n");
+  debug_log_init();
+  debug_log_printf("\r\n[boot] reset complete, RTT initialized\r\n");
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+DWT->CYCCNT = 0U;
+DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+
+  SEGGER_SYSVIEW_Conf();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */

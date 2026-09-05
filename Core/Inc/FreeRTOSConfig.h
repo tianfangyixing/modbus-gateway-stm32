@@ -167,6 +167,12 @@ standard names. */
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
 #define configUSE_QUEUE_SETS 1
+  #include "SEGGER_SYSVIEW_FreeRTOS.h"
+#if (configUSE_QUEUE_SETS == 1)
+  #undef traceQUEUE_SEND
+  #define traceQUEUE_SEND(pxQueue) ((void)0)
+#endif
+
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */

@@ -159,7 +159,6 @@ USBD_CDC_ItfTypeDef USBD_Interface_fops_HS =
 static int8_t CDC_Init_HS(void)
 {
   /* USER CODE BEGIN 8 */
-  management_transport_result_t management_result;
   uint8_t rx_result;
   uint8_t tx_result;
 
@@ -171,11 +170,7 @@ static int8_t CDC_Init_HS(void)
     return (USBD_FAIL);
   }
 
-  management_result = management_transport_session_open_from_isr();
-  if (management_result != MANAGEMENT_TRANSPORT_OK)
-  {
-    return (USBD_FAIL);
-  }
+  management_transport_session_open_from_isr();
 
   return (USBD_OK);
   /* USER CODE END 8 */
@@ -189,10 +184,7 @@ static int8_t CDC_Init_HS(void)
 static int8_t CDC_DeInit_HS(void)
 {
   /* USER CODE BEGIN 9 */
-  if (management_transport_session_close_from_isr() != MANAGEMENT_TRANSPORT_OK)
-  {
-    return (USBD_FAIL);
-  }
+  management_transport_session_close_from_isr();
 
   return (USBD_OK);
   /* USER CODE END 9 */
@@ -298,10 +290,7 @@ static int8_t CDC_Receive_HS(uint8_t* Buf, uint32_t *Len)
   {
     return (USBD_FAIL);
   }
-  if (management_transport_receive_from_isr(Buf, *Len) != MANAGEMENT_TRANSPORT_OK)
-  {
-    return (USBD_FAIL);
-  }
+  management_transport_receive_from_isr(Buf, *Len);
 
   return (USBD_OK);
   /* USER CODE END 11 */
@@ -355,14 +344,11 @@ static int8_t CDC_TransmitCplt_HS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 {
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 14 */
-  if (Len == NULL)
+  if (Len == NULL || epnum != (CDC_IN_EP & 0x7FU))
   {
     return (USBD_FAIL);
   }
-  if (management_transport_transmit_complete_from_isr(Buf, *Len, epnum) != MANAGEMENT_TRANSPORT_OK)
-  {
-    return (USBD_FAIL);
-  }
+  management_transport_transmit_complete_from_isr(Buf, *Len);
   /* USER CODE END 14 */
   return result;
 }
@@ -382,7 +368,7 @@ static management_transport_cdc_result_t management_transport_map_cdc_result(uin
   return MANAGEMENT_TRANSPORT_CDC_FAILED;
 }
 
-management_transport_cdc_result_t management_transport_cdc_enable_receive(void)
+management_transport_cdc_result_t management_transport_enable_receive(void)
 {
   uint8_t result = USBD_CDC_SetRxBuffer(&hUsbDeviceHS, UserRxBufferHS);
 

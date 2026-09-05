@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx,MBEDTLS_CONFIG_FILE=&lt;mbedtls_config.h&gt;</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../LWIP/App;../LWIP/Target;../Middlewares/Third_Party/LwIP/src/include;../Middlewares/Third_Party/LwIP/system;../Drivers/BSP/Components/lan8742;../Middlewares/Third_Party/LwIP/src/include/netif/ppp;../Middlewares/Third_Party/LwIP/src/include/lwip;../Middlewares/Third_Party/LwIP/src/include/lwip/apps;../Middlewares/Third_Party/LwIP/src/include/lwip/priv;../Middlewares/Third_Party/LwIP/src/include/lwip/prot;../Middlewares/Third_Party/LwIP/src/include/netif;../Middlewares/Third_Party/LwIP/src/include/compat/posix;../Middlewares/Third_Party/LwIP/src/include/compat/posix/arpa;../Middlewares/Third_Party/LwIP/src/include/compat/posix/net;../Middlewares/Third_Party/LwIP/src/include/compat/posix/sys;../Middlewares/Third_Party/LwIP/src/include/compat/stdc;../Middlewares/Third_Party/LwIP/system/arch;../Modbus/include;../MQTT/include;../SNTP/include;../ExternalFlash/include;../MBEDTLS/App;../Middlewares/Third_Party/mbedTLS/include/mbedtls;../Middlewares/Third_Party/mbedTLS/include;../Middlewares/Third_Party/LwIP/src/apps/altcp_tls;../Middlewares/Third_Party/RTT;../USB_DEVICE/App;../USB_DEVICE/Target;../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;../MBEDTLS/Target;../Configuration/include;../Management/include</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../LWIP/App;../LWIP/Target;../Middlewares/Third_Party/LwIP/src/include;../Middlewares/Third_Party/LwIP/system;../Drivers/BSP/Components/lan8742;../Middlewares/Third_Party/LwIP/src/include/netif/ppp;../Middlewares/Third_Party/LwIP/src/include/lwip;../Middlewares/Third_Party/LwIP/src/include/lwip/apps;../Middlewares/Third_Party/LwIP/src/include/lwip/priv;../Middlewares/Third_Party/LwIP/src/include/lwip/prot;../Middlewares/Third_Party/LwIP/src/include/netif;../Middlewares/Third_Party/LwIP/src/include/compat/posix;../Middlewares/Third_Party/LwIP/src/include/compat/posix/arpa;../Middlewares/Third_Party/LwIP/src/include/compat/posix/net;../Middlewares/Third_Party/LwIP/src/include/compat/posix/sys;../Middlewares/Third_Party/LwIP/src/include/compat/stdc;../Middlewares/Third_Party/LwIP/system/arch;../Modbus/include;../MQTT/include;../SNTP/include;../ExternalFlash/include;../MBEDTLS/App;../Middlewares/Third_Party/mbedTLS/include/mbedtls;../Middlewares/Third_Party/mbedTLS/include;../Middlewares/Third_Party/LwIP/src/apps/altcp_tls;../Middlewares/Third_Party/RTT;../USB_DEVICE/App;../USB_DEVICE/Target;../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;../MBEDTLS/Target;../Configuration/include;../Management/include;..\Middlewares\Third_Party\SystemView-4.12.0\Config;..\Middlewares\Third_Party\SystemView-4.12.0\SYSVIEW;..\Middlewares\Third_Party\SystemView-4.12.0\SEGGER;..\Middlewares\Third_Party\SystemView-4.12.0\Sample\FreeRTOSV10</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -10004,6 +10004,26 @@
               <FileName>management_transport.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Management\src\management_transport.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Middlewares/SystemView</GroupName>
+          <Files>
+            <File>
+              <FileName>SEGGER_SYSVIEW.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\SystemView-4.12.0\SYSVIEW\SEGGER_SYSVIEW.c</FilePath>
+            </File>
+            <File>
+              <FileName>SEGGER_SYSVIEW_FreeRTOS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\SystemView-4.12.0\Sample\FreeRTOSV10\SEGGER_SYSVIEW_FreeRTOS.c</FilePath>
+            </File>
+            <File>
+              <FileName>SEGGER_SYSVIEW_Config_FreeRTOS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\SystemView-4.12.0\Sample\FreeRTOSV10\Config\Cortex-M\SEGGER_SYSVIEW_Config_FreeRTOS.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -22,6 +22,10 @@ typedef struct
     bool assert_failed;
     TickType_t tick;
     TickType_t last_wait_ticks;
+    uint32_t notification_count;
+    uint32_t delay_count;
+    TickType_t last_delay_ticks;
+    void (*delay_hook)(void);
 
     management_transport_cdc_result_t cdc_enable_result;
     management_transport_cdc_result_t cdc_send_result;
@@ -43,6 +47,7 @@ typedef struct
 
     bool sntp_synchronized;
     bool sntp_time_available;
+    uint32_t time_read_count;
     uint32_t unix_seconds;
     uint32_t microseconds;
     mqtt_publisher_state_t mqtt_state;
@@ -54,6 +59,8 @@ typedef struct
 extern management_transport_test_state_t management_transport_test_state;
 
 void management_transport_test_adapter_reset(void);
+void management_transport_test_run_task(void);
+void management_transport_test_stop_task(void);
 void management_transport_test_set_network(bool present, bool link_up, uint8_t first, uint8_t second, uint8_t third,
                                            uint8_t fourth);
 void management_transport_test_system_reset(void);

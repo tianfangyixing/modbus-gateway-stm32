@@ -10,6 +10,7 @@ TaskHandle_t xTaskCreateStatic(TaskFunction_t task_function, const char *name, u
 void vTaskNotifyGiveFromISR(TaskHandle_t task_handle, BaseType_t *higher_priority_task_woken);
 BaseType_t xTaskNotifyGive(TaskHandle_t task_handle);
 uint32_t ulTaskNotifyTake(BaseType_t clear_count_on_exit, TickType_t ticks_to_wait);
+void vTaskDelay(TickType_t ticks_to_delay);
 TickType_t xTaskGetTickCount(void);
 TickType_t xTaskGetTickCountFromISR(void);
 

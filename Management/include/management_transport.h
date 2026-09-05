@@ -25,27 +25,21 @@ typedef enum
  */
 management_transport_result_t management_transport_init(void);
 
-/**
- * @brief Activate request processing after all status providers are initialized.
- * @note Must be called from task context.
- */
-management_transport_result_t management_transport_activate(void);
 
 /** @brief Notify Management that the USB CDC class opened a new session. */
-management_transport_result_t management_transport_session_open_from_isr(void);
+void management_transport_session_open_from_isr(void);
 
 /** @brief Notify Management that the current USB CDC session closed. */
-management_transport_result_t management_transport_session_close_from_isr(void);
+void management_transport_session_close_from_isr(void);
 
 /** @brief Deliver one completed USB CDC OUT packet. */
-management_transport_result_t management_transport_receive_from_isr(const uint8_t *data, uint32_t length);
+void management_transport_receive_from_isr(const uint8_t *data, uint32_t length);
 
 /** @brief Deliver the asynchronous completion of one USB CDC IN transfer. */
-management_transport_result_t management_transport_transmit_complete_from_isr(const uint8_t *data, uint32_t length,
-                                                                              uint8_t endpoint);
+void management_transport_transmit_complete_from_isr(const uint8_t *data, uint32_t length);
 
 /** @brief Platform hook that rearms the USB CDC OUT endpoint. */
-management_transport_cdc_result_t management_transport_cdc_enable_receive(void);
+management_transport_cdc_result_t management_transport_enable_receive(void);
 
 /** @brief Platform hook that submits one asynchronous USB CDC IN transfer. */
 management_transport_cdc_result_t management_transport_cdc_send(uint8_t *data, uint16_t length);
