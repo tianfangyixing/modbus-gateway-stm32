@@ -31,6 +31,9 @@
 /* USER CODE BEGIN 0 */
 
 #include "lwip/dns.h"
+#include "lwip/tcpip.h"
+#include "lwip/timeouts.h"
+#include "watchdog.h"
 
 /* USER CODE END 0 */
 /* Private function prototypes -----------------------------------------------*/
@@ -53,7 +56,15 @@ osThreadAttr_t attributes;
 /* USER CODE END OS_THREAD_ATTR_CMSIS_RTOS_V2 */
 
 /* USER CODE BEGIN 2 */
+#define TCPIP_WATCHDOG_INTERVAL_MS 1000U
 
+static void tcpip_watchdog_timeout(void *argument)
+{
+    watchdog_report(WATCHDOG_EVENT_TCPIP);
+
+    /* sys_timeout 是单次定时，需要重新注册下一次。 */
+    sys_timeout(TCPIP_WATCHDOG_INTERVAL_MS, tcpip_watchdog_timeout, argument);
+}
 /* USER CODE END 2 */
 
 /**
@@ -94,7 +105,9 @@ void MX_LWIP_Init(void)
   dhcp_start(&gnetif);
 
 /* USER CODE BEGIN 3 */
-
+	LOCK_TCPIP_CORE();
+	sys_timeout(TCPIP_WATCHDOG_INTERVAL_MS, tcpip_watchdog_timeout, NULL);
+	UNLOCK_TCPIP_CORE();
 /* USER CODE END 3 */
 }
 

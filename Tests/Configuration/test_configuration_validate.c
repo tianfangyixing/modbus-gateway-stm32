@@ -388,7 +388,7 @@ static void test_rtu_frame_format_and_timeout_boundaries(void)
     assert_valid(&configuration);
 
     make_default_configuration(&configuration);
-    configuration.rtu.first_byte_timeout_ms = 60000U;
+    configuration.rtu.first_byte_timeout_ms = 3000U;
     assert_valid(&configuration);
 
     make_default_configuration(&configuration);
@@ -396,7 +396,7 @@ static void test_rtu_frame_format_and_timeout_boundaries(void)
     assert_validation_result(&configuration, CONFIGURATION_VALIDATION_RTU_INVALID);
 
     make_default_configuration(&configuration);
-    configuration.rtu.first_byte_timeout_ms = 60001U;
+    configuration.rtu.first_byte_timeout_ms = 3001U;
     assert_validation_result(&configuration, CONFIGURATION_VALIDATION_RTU_INVALID);
 }
 
@@ -1250,7 +1250,7 @@ static void test_collection_poll_and_timeout_boundaries_are_independent(void)
 
     make_valid_mqtt_configuration(&configuration);
     configuration.collection.points[0].poll_interval_ms = 1000U;
-    configuration.collection.points[0].first_byte_timeout_ms = 5000U;
+    configuration.collection.points[0].first_byte_timeout_ms = 3000U;
     assert_valid(&configuration);
 
     make_valid_mqtt_configuration(&configuration);
@@ -1271,7 +1271,7 @@ static void test_collection_poll_and_timeout_boundaries_are_independent(void)
     assert_validation_result(&configuration, CONFIGURATION_VALIDATION_COLLECTION_INVALID);
 
     make_valid_mqtt_configuration(&configuration);
-    configuration.collection.points[0].first_byte_timeout_ms = 5001U;
+    configuration.collection.points[0].first_byte_timeout_ms = 3001U;
     assert_validation_result(&configuration, CONFIGURATION_VALIDATION_COLLECTION_INVALID);
 }
 

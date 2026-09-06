@@ -31,15 +31,19 @@ Collector 的输入必须直接来自 `configuration_service_active()` 所属、
 4. Collector 获得的请求队列和响应队列必须分别是该 Scheduler 已绑定的低优先级队列，元素大小分别为
    `sizeof(modbus_rtu_transaction_scheduler_request_t)` 和
    `sizeof(modbus_rtu_transaction_scheduler_response_t)`；
-5. 低优先级队列在 Scheduler 和 Collector 的整个运行期内保持有效，并且没有其他生产者或消费者。
+5. 低优先级队列在 Scheduler 和 Collector 的整个运行期内保持有效，并且没有其他生产者或消费者；
+6. 看门狗已经完成初始化；无论是否存在采集点，都必须提供有效的静态任务资源。
 
 Collector 不取得配置、Scheduler 或队列对象的所有权，这些对象必须在 Collector 的整个运行期内保持有效。
 
 ### 2.2 无采集点
 
-当 `collection.point_count == 0` 时，初始化必须成功得到“不运行”的结果，不创建 Collector 任务，不分配 ADU，
-也不向任何 Scheduler 队列或 MQTT Publisher 提交工作。Configuration 规范保证 MQTT 禁用时
-`point_count == 0`，因此 MQTT 禁用时 Collector 必须保持不运行。
+当 `collection.point_count == 0` 时，初始化仍创建 Collector 任务。创建成功后返回
+`MODBUS_COLLECTOR_DISABLED`，状态为 `MODBUS_COLLECTOR_STATE_DISABLED`，`task_handle != NULL`；
+这里的“停用”仅表示不执行采集。任务每轮调用 `watchdog_report(WATCHDOG_EVENT_COLLECTOR)`，
+然后阻塞 1000 ms，持续报到。它不访问采集点，不分配 ADU，也不向任何 Scheduler 队列或
+MQTT Publisher 提交工作。Configuration 规范保证 MQTT 禁用时 `point_count == 0`，因此 MQTT
+禁用时 Collector 仍按此方式运行并报到。
 
 ### 2.3 启动
 
@@ -47,7 +51,7 @@ Collector 不取得配置、Scheduler 或队列对象的所有权，这些对象
 `task_handle != NULL`。只有确认 Scheduler 任务成功启动后，才允许创建 Collector 任务。若
 `task_handle == NULL`，Collector 启动必须失败且不得创建任务或提交请求。
 
-`point_count > 0` 时，Collector 使用调用方提供的静态任务栈和 `StaticTask_t` 创建恰好一个长期运行任务。
+Collector 使用调用方提供的静态任务栈和 `StaticTask_t` 创建恰好一个长期运行任务，包括无采集点的情况。
 任务创建失败必须作为启动失败报告；失败路径不得留下已提交请求、已分配 ADU 或部分运行的 Collector。
 本次启动期间不得重复初始化或重复启动同一个 Collector，也不提供运行期停止、重配或重启语义。
 
@@ -92,6 +96,10 @@ Collector 对同一时刻最多保有一个已成功入队但尚未取回响应�
 消费低优先级响应队列直至取得对应结果；不得因下一个采集点到期、MQTT 断开或本地等待策略而停止消费。低优先级
 响应队列满会阻塞整个 Scheduler，因此 Collector 不得在已有在途事务时开始其他工作或延迟接收其响应。
 
+等待响应时，每次阻塞最多 1000 ms；等待超时只向看门狗报到，然后继续等待同一事务，不重新提交请求，
+不访问未收到的响应，也不提前释放在途 ADU。报到表示 Collector 任务仍能运行，不表示 RTU 事务已经完成；
+RTU 调度任务的执行进度由其自身的看门狗事件位监控。
+
 请求的 `token` 必须使当前在途事务可与响应关联。收到不匹配的 token 时不得解码或发布，但仍须按响应队列
 契约释放返回的 ADU，并把本次事务作为内部关联错误结束。低优先级请求只允许通过正常的队列发送 API 提交，
 不得使用 `xQueueOverwrite()`、队列重置或任何会替换既有请求的操作。入队失败后同一周期不得再次入队。
@@ -102,7 +110,8 @@ Collector 为每个有效采集点维护独立的绝对 deadline，使用 FreeRT
 
 - Collector 任务开始运行时，以同一个当前 tick 初始化所有点的首个 deadline，因此全部点立即到期；
 - 有多个到期点时先选择 deadline 最早者；deadline 相同时按配置数组索引从小到大各处理一次；
-- 未到期时任务阻塞到最近的 deadline，不进行忙轮询；
+- 每轮主循环开始时调用 `watchdog_report(WATCHDOG_EVENT_COLLECTOR)`；
+- 未到期时任务阻塞到最近的 deadline，单次阻塞最多 1000 ms，以便周期性报到，不进行忙轮询；
 - 每个点完成一次处理后，无论结果成功或失败，都以该点原 deadline 为基准按
   `poll_interval_ms` 的整数倍向前推进，直至得到严格晚于当前 tick 的第一个 deadline；
 - 事务等待、解码、日志或 MQTT 发布跨过一个或多个周期时，已过期周期全部丢弃，不集中补跑，也不为赶进度
@@ -178,5 +187,7 @@ ADU 分配、请求编码、低优先级入队、RTU 事务、响应关联、响
 6. bit、UINT16 和 INT16 payload 分别满足精确的 ASCII 标量格式，topic/QoS 来自配置且 retain 恒为 `0`；
 7. Publisher 不可用时无离线积压，下一周期仍可继续采集；
 8. ADU 在分配、编码、入队、响应和释放的所有成功与失败路径上始终只有一个所有者并恰好释放一次；
-9. `point_count == 0` 或 Scheduler 未成功启动时不创建 Collector 任务；
-10. 低优先级响应被持续消费，高优先级队列、4:1 公平性、Modbus TCP 及 `Middlewares/**` 均不受改变。
+9. `point_count == 0` 时仍创建 Collector 任务，每秒报到，不访问采集点或提交工作；Scheduler 未成功启动时
+   不创建 Collector 任务；
+10. 低优先级响应被持续消费，高优先级队列、4:1 公平性、Modbus TCP 及 `Middlewares/**` 均不受改变；
+11. 空闲和排队等待响应期间持续报到；响应尚未收到时，不重复入队、不解码、不发布、不释放在途 ADU。

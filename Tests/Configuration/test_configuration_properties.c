@@ -96,7 +96,7 @@ static void make_random_valid_configuration(configuration_t *configuration)
 
     configuration->rtu.baud_rate = baud_rates[random_u32() % (sizeof(baud_rates) / sizeof(baud_rates[0]))];
     configuration->rtu.frame_format = (uint8_t)(random_u32() % 4U);
-    configuration->rtu.first_byte_timeout_ms = (uint16_t)(50U + random_u32() % 59951U);
+    configuration->rtu.first_byte_timeout_ms = (uint16_t)(50U + random_u32() % 2951U);
     configuration->modbus_tcp.listen_port = (uint16_t)(1U + random_u32() % UINT16_MAX);
 
     primary_value = random_u32();

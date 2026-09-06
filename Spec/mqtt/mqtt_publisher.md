@@ -138,6 +138,11 @@ Publisher 必须把 `connected` 置假、状态设为 `DISCONNECTED`，在 TCPIP
 仍停留在 MQTT client 中，任务必须在 TCPIP core lock 内调用 `mqtt_disconnect()` 销毁对应 PCB。下一轮仍重新
 检查网络条件、`connected`、DNS 和连接条件；重试周期保持 15 秒，不实施指数退避。
 
+DNS 使用异步解析接口，连接任务固定最多等待 3000 ms，每次等待不超过 100 ms，并持续上报 MQTT 看门狗事件。
+立即解析成功时直接使用返回地址；异步成功时复制回调地址。等待超时返回 `ERR_TIMEOUT`，本轮不得发起连接。
+任务调度及 TCPIP core lock 竞争可能使实际返回稍晚于等待期限。等待超时不取消底层 DNS 查询；旧查询结束前
+不得复用其上下文发起新查询，回调结果保存在静态存储中，不得写入已经返回的调用栈。
+
 连接回调收到 `MQTT_CONNECT_ACCEPTED` 时把 `connected` 置真并把状态设为 `CONNECTED`；其他状态均把
 `connected` 置假、状态设为 `DISCONNECTED`，并以 `NOT_CONNECTED` 逐个终结全部占用的普通发布槽。断开后
 LwIP 已在调用失败或断开回调前关闭 PCB 并把 MQTT client 置为 `TCP_DISCONNECTED`，连接任务会在下一次 15 秒

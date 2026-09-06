@@ -2,6 +2,7 @@
 #include "modbus_common.h"
 #include "system_time.h"
 #include "configuration_service.h"
+#include "watchdog.h"
 
 #define MODBUS_TCP_MIN_MBAP_LENGTH UINT16_C(2)
 #define MODBUS_TCP_MAX_MBAP_LENGTH UINT16_C(254)
@@ -454,6 +455,8 @@ static void tcp_task(void *argument)
         struct timeval select_timeout;
         int max_socket;
         int select_result;
+
+        watchdog_report(WATCHDOG_EVENT_MODBUS_TCP);
 
         FD_ZERO(&server->read_sockets);
         FD_ZERO(&server->write_sockets);

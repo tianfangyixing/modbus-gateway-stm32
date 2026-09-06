@@ -1,10 +1,12 @@
 #include "modbus_rtu_transaction_scheduler.h"
 
+#include "watchdog.h"
+
 #include <stddef.h>
 #include <string.h>
 
 #define MODBUS_RTU_TRANSACTION_SCHEDULER_ADAPTER_RECOVERY_DELAY_MS 100U
-#define MODBUS_RTU_TRANSACTION_SCHEDULER_MAX_CONSECUTIVE_HIGH_REQUESTS 4U
+#define MODBUS_RTU_TRANSACTION_SCHEDULER_MAX_CONSECUTIVE_HIGH_REQUESTS 2U
 
 static void select_available_request_queues(
     modbus_rtu_transaction_scheduler_t *scheduler,
@@ -16,7 +18,7 @@ static void select_available_request_queues(
 
     if (*selected_high_request_count == 0U && *selected_low_request_count == 0U)
     {
-        ticks_to_wait = portMAX_DELAY;
+        ticks_to_wait = pdMS_TO_TICKS(500);
     }
 
     selected_queue = xQueueSelectFromSet(scheduler->request_queue_set, ticks_to_wait);
@@ -45,6 +47,11 @@ static QueueHandle_t receive_next_transaction(
     QueueHandle_t response_queue;
 
     select_available_request_queues(scheduler, selected_high_request_count, selected_low_request_count);
+
+    if(*selected_high_request_count == 0 && *selected_low_request_count == 0)
+    {
+        return NULL;
+    }
 
     if (*selected_high_request_count > 0U &&
         (scheduler->consecutive_high_request_count < MODBUS_RTU_TRANSACTION_SCHEDULER_MAX_CONSECUTIVE_HIGH_REQUESTS ||
@@ -84,8 +91,15 @@ static void transaction_scheduler_task(void *argument)
         modbus_rtu_adu_t temporary_response;
         modbus_rtu_transaction_scheduler_response_t response;
 
+        watchdog_report(WATCHDOG_EVENT_RTU_SCHEDULER);
+
         response_queue = receive_next_transaction(
             scheduler, &request, &selected_high_request_count, &selected_low_request_count);
+        if(!response_queue)
+        {
+            continue;
+        }
+
         response.token = request.token;
         response.result = modbus_rtu_transact(
             scheduler->rtu_channel, request.rtu_adu, request.response_timeout_ms, &temporary_response);

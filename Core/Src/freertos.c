@@ -44,6 +44,7 @@
 #include "modbus_gateway_app.h"
 #include "mqtt_publisher.h"
 #include "sntp_service.h"
+#include "watchdog.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -102,6 +103,7 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
+  watchdog_init();
   management_initialization_result = management_transport_init();
 
   /* USER CODE END Init */

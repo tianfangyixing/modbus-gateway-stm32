@@ -132,6 +132,31 @@ static void test_initialization_is_idempotent(void)
     TEST_ASSERT_EQUAL_UINT32(1U, management_transport_test_state.task_create_count);
 }
 
+static void test_idle_task_reports_watchdog_without_usb_notifications(void)
+{
+    TEST_ASSERT_EQUAL_INT(MANAGEMENT_TRANSPORT_OK, management_transport_init());
+    TEST_ASSERT_EQUAL_UINT32(0U, management_transport_test_state.watchdog_report_count);
+    management_transport_test_process();
+    TEST_ASSERT_EQUAL_UINT32(1U, management_transport_test_state.watchdog_report_count);
+    TEST_ASSERT_EQUAL_UINT32(0U, management_transport_test_state.last_watchdog_report_tick);
+
+    management_transport_test_state.tick = 499U;
+    management_transport_test_process();
+    TEST_ASSERT_EQUAL_UINT32(1U, management_transport_test_state.watchdog_report_count);
+
+    management_transport_test_state.tick = 500U;
+    management_transport_test_process();
+    TEST_ASSERT_EQUAL_UINT32(2U, management_transport_test_state.watchdog_report_count);
+    TEST_ASSERT_EQUAL_UINT32(500U, management_transport_test_state.last_watchdog_report_tick);
+
+    management_transport_test_state.tick = 1000U;
+    management_transport_test_process();
+    TEST_ASSERT_EQUAL_UINT32(3U, management_transport_test_state.watchdog_report_count);
+    TEST_ASSERT_EQUAL_UINT32(1000U, management_transport_test_state.last_watchdog_report_tick);
+    TEST_ASSERT_EQUAL_UINT32(0U, management_transport_test_state.notification_count);
+    TEST_ASSERT_EQUAL_UINT32(0U, management_transport_test_state.cdc_send_count);
+}
+
 static void test_initial_cdc_arm_accepts_packet_before_task_runs(void)
 {
     uint32_t request_length = encode_request(MESSAGE_GET_STATUS, 1U, NULL, 0U);
@@ -686,6 +711,7 @@ int main(void)
     UNITY_BEGIN();
     RUN_TEST(test_lifecycle_reports_initialization_and_task_creation_failures);
     RUN_TEST(test_initialization_is_idempotent);
+    RUN_TEST(test_idle_task_reports_watchdog_without_usb_notifications);
     RUN_TEST(test_initial_cdc_arm_accepts_packet_before_task_runs);
     RUN_TEST(test_get_active_configuration_returns_payload_and_not_ready);
     RUN_TEST(test_get_active_configuration_maps_internal_encoding_failures);

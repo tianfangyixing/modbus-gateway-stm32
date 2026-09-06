@@ -70,6 +70,7 @@ target_compile_options(management_transport_runtime PRIVATE
 target_include_directories(management_transport_runtime PRIVATE
     support/management
     support
+    "${REPOSITORY_ROOT}/Core/Inc"
     "${REPOSITORY_ROOT}/Management/include"
     "${REPOSITORY_ROOT}/Configuration/include"
     "${REPOSITORY_ROOT}/MQTT/include"
@@ -105,6 +106,7 @@ target_include_directories(management_transport_test_adapter PUBLIC
 )
 
 target_include_directories(management_transport_test_adapter PRIVATE
+    "${REPOSITORY_ROOT}/Core/Inc"
     "${REPOSITORY_ROOT}/SNTP/include"
 )
 
@@ -222,8 +224,6 @@ target_link_libraries(configuration_test_support PUBLIC
 add_library(configuration_service_runtime STATIC
     "${REPOSITORY_ROOT}/Configuration/src/configuration_binary_codec.c"
     "${REPOSITORY_ROOT}/Configuration/src/configuration_service.c"
-    "${REPOSITORY_ROOT}/Middlewares/Third_Party/RTT/SEGGER_RTT.c"
-    "${REPOSITORY_ROOT}/Middlewares/Third_Party/RTT/SEGGER_RTT_printf.c"
 )
 
 target_compile_definitions(configuration_service_runtime PRIVATE
@@ -248,7 +248,6 @@ target_include_directories(configuration_service_runtime PRIVATE
     "${REPOSITORY_ROOT}/Configuration/include"
     "${REPOSITORY_ROOT}/ExternalFlash/include"
     "${REPOSITORY_ROOT}/MBEDTLS/App"
-    "${REPOSITORY_ROOT}/Middlewares/Third_Party/RTT"
     "${LWIP_ROOT}/src/include"
     "${LWIP_ROOT}/src/apps/altcp_tls"
     "${LWIP_ROOT}/system"
@@ -345,6 +344,8 @@ target_compile_options(mqtt_publisher_client_id_tests PRIVATE
 )
 
 target_include_directories(mqtt_publisher_client_id_tests PRIVATE
+    support/management
+    "${REPOSITORY_ROOT}/Core/Inc"
     "${REPOSITORY_ROOT}/MQTT/include"
 )
 
@@ -387,3 +388,36 @@ set_tests_properties(configuration_property_tests PROPERTIES
     LABELS "configuration;properties"
     TIMEOUT 120
 )
+
+add_executable(ethernetif_output_tests
+    LWIP/test_ethernetif_output.c
+)
+
+target_compile_definitions(ethernetif_output_tests PRIVATE USE_HAL_DRIVER STM32F407xx)
+set_property(TARGET ethernetif_output_tests PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+target_compile_options(ethernetif_output_tests PRIVATE
+    -Wall -Wextra -Werror
+    # CubeMX callbacks in the included production file have unused parameters.
+    -Wno-unused-parameter
+    # Fat LTO objects also work with MinGW's regular ar.exe.
+    -O2 -ffat-lto-objects -ffunction-sections -fdata-sections
+)
+target_link_options(ethernetif_output_tests PRIVATE -Wl,--gc-sections)
+target_include_directories(ethernetif_output_tests PRIVATE
+    support/ethernetif
+    support/management
+    "${REPOSITORY_ROOT}/Core/Inc"
+    "${REPOSITORY_ROOT}/LWIP/Target"
+)
+target_include_directories(ethernetif_output_tests SYSTEM PRIVATE
+    "${REPOSITORY_ROOT}/Drivers/STM32F4xx_HAL_Driver/Inc"
+    "${REPOSITORY_ROOT}/Drivers/CMSIS/Include"
+    "${REPOSITORY_ROOT}/Drivers/CMSIS/Device/ST/STM32F4xx/Include"
+    "${REPOSITORY_ROOT}/Drivers/BSP/Components/lan8742"
+    "${REPOSITORY_ROOT}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2"
+    "${LWIP_ROOT}/src/include"
+    "${LWIP_ROOT}/system"
+)
+target_link_libraries(ethernetif_output_tests PRIVATE unity)
+add_test(NAME ethernetif_output_tests COMMAND ethernetif_output_tests)
+set_tests_properties(ethernetif_output_tests PROPERTIES LABELS "lwip;ethernet;tx" TIMEOUT 10)

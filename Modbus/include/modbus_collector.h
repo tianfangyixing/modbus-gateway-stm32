@@ -54,7 +54,8 @@ typedef struct
 /**
   * @brief Initialize and start a collector using the scheduler's dedicated low-priority queues.
   * @pre collector is zero-initialized and config->collection points into the stable validated active configuration.
-  * @retval MODBUS_COLLECTOR_DISABLED No task is created when point_count is zero.
+  * @pre Watchdog initialization is complete; valid static task resources are required even when point_count is zero.
+  * @retval MODBUS_COLLECTOR_DISABLED Collection is disabled, but the task still reports to the watchdog every second.
   */
 modbus_collector_result_t modbus_collector_init(modbus_collector_t *collector, const modbus_collector_config_t *config);
 

@@ -506,7 +506,7 @@ static bool collection_point_is_valid(const configuration_collection_point_t *po
 {
     if (point->slave_address == 0U || point->slave_address > 247U ||
         point->poll_interval_ms < UINT32_C(1000) || point->poll_interval_ms > UINT32_C(3600000) ||
-        point->first_byte_timeout_ms < UINT16_C(50) || point->first_byte_timeout_ms > UINT16_C(5000) ||
+        point->first_byte_timeout_ms < UINT16_C(50) || point->first_byte_timeout_ms > UINT16_C(3000) ||
         !topic_is_valid(&point->topic) || point->qos > 1U)
     {
         return false;
@@ -630,7 +630,7 @@ configuration_validation_result_t configuration_validate(const configuration_t *
     if (!baud_rate_is_valid(configuration->rtu.baud_rate) ||
         !frame_format_is_valid(configuration->rtu.frame_format) ||
         configuration->rtu.first_byte_timeout_ms < UINT16_C(50) ||
-        configuration->rtu.first_byte_timeout_ms > UINT16_C(60000))
+        configuration->rtu.first_byte_timeout_ms > UINT16_C(3000))
     {
         return CONFIGURATION_VALIDATION_RTU_INVALID;
     }

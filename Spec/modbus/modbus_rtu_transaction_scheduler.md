@@ -92,10 +92,14 @@ Transaction Scheduler 在一个 FreeRTOS 任务中串行执行 Modbus RTU 事务
 工程必须同时启用 `configUSE_QUEUE_SETS` 和 `configSUPPORT_DYNAMIC_ALLOCATION`；
 当前 FreeRTOS 10.3.1 的 `xQueueCreateSet()` 使用动态分配。
 
-调度任务在没有已选择请求时，以 `portMAX_DELAY` 调用 `xQueueSelectFromSet()`；
-被选中的 Queue Set 成员事件会按优先级累计，再按照第 2.3 节的 4:1 规则接收请求。
+调度任务在每轮主循环开始时调用 `watchdog_report(WATCHDOG_EVENT_RTU_SCHEDULER)`。
+看门狗必须先于调度任务完成初始化。在没有已选择请求时，调度任务以 `pdMS_TO_TICKS(500)`
+调用 `xQueueSelectFromSet()`；等待超时且没有请求时进入下一轮，以便空闲期间继续报到。
+被选中的 Queue Set 成员事件会按优先级累计，再按照第 2.3 节的 2:1 规则接收请求。
 调度任务以 `portMAX_DELAY` 写入响应队列；调用方必须持续消费响应，否则响应队列
-满时会阻塞整个调度任务。
+满时会阻塞整个调度任务。执行事务和等待响应入队期间不报到；正常完成后在下一轮主循环报到，
+长时间阻塞时由看门狗检测。正常事务执行时间与响应入队等待时间之和必须留在硬件看门狗
+允许的报到间隔内，调用方配置事务超时时应考虑这一约束。
 
 ## 3. 调用顺序与 ADU 所有权
 

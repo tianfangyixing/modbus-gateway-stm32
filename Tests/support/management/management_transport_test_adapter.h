@@ -26,6 +26,8 @@ typedef struct
     uint32_t delay_count;
     TickType_t last_delay_ticks;
     void (*delay_hook)(void);
+    uint32_t watchdog_report_count;
+    TickType_t last_watchdog_report_tick;
 
     management_transport_cdc_result_t cdc_enable_result;
     management_transport_cdc_result_t cdc_send_result;

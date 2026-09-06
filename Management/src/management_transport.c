@@ -19,6 +19,8 @@
 #include "main.h"
 #endif
 
+#include "watchdog.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
@@ -352,13 +354,17 @@ static void management_transport_handle_frame(const management_frame_view_t *fra
 
 static void management_transport_process(void)
 {
-    uint32_t wait_ticks = portMAX_DELAY;
+    uint32_t wait_ticks = pdMS_TO_TICKS(500);
 
 
     while(1)
     {
+        watchdog_report(WATCHDOG_EVENT_MANAGEMENT);
+
         ulTaskNotifyTake(pdTRUE, wait_ticks);
-        wait_ticks = portMAX_DELAY;
+        wait_ticks = pdMS_TO_TICKS(500);
+
+        
 
         // 在临界区处理各个事件，session一切值即被任务读写，也被isr读写
 

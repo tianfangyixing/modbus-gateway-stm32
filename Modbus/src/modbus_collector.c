@@ -4,12 +4,14 @@
 #include "modbus_collector_codec.h"
 #include "modbus_rtu_adu_pool.h"
 #include "mqtt_publisher.h"
+#include "watchdog.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #define MODBUS_COLLECTOR_TICK_HALF_RANGE ((TickType_t)0x80000000UL)
+#define MODBUS_COLLECTOR_WATCHDOG_INTERVAL_MS 1000U
 
 typedef enum
 {
@@ -167,7 +169,12 @@ static void process_point(modbus_collector_t *collector, uint8_t point_index)
         return;
     }
 
-    xQueueReceive(collector->response_queue, &response, portMAX_DELAY);
+    TickType_t wait_ticks = interval_to_ticks(MODBUS_COLLECTOR_WATCHDOG_INTERVAL_MS);
+
+    while (xQueueReceive(collector->response_queue, &response, wait_ticks) != pdPASS)
+    {
+        watchdog_report(WATCHDOG_EVENT_COLLECTOR);
+    }
 
     process_response(collector, point_index, token, &response);
 }
@@ -176,6 +183,7 @@ static void collector_task(void *argument)
 {
     modbus_collector_t *collector = argument;
     TickType_t initial_deadline = xTaskGetTickCount();
+    TickType_t wait_ticks = interval_to_ticks(MODBUS_COLLECTOR_WATCHDOG_INTERVAL_MS);
     uint8_t point_index;
 
     for (point_index = 0U; point_index < collector->collection->point_count; point_index++)
@@ -188,12 +196,20 @@ static void collector_task(void *argument)
         TickType_t now;
         TickType_t deadline;
 
+        watchdog_report(WATCHDOG_EVENT_COLLECTOR);
+
+        if (collector->collection->point_count == 0U)
+        {
+            vTaskDelay(wait_ticks);
+            continue;
+        }
+
         point_index = select_earliest_point(collector);
         deadline = collector->next_deadline[point_index];
         now = xTaskGetTickCount();
         if (!deadline_is_reached(now, deadline))
         {
-            vTaskDelay((TickType_t)(deadline - now));
+            vTaskDelay(deadline - now > wait_ticks ? wait_ticks : deadline - now);
             continue;
         }
 
@@ -245,7 +261,7 @@ modbus_collector_result_t modbus_collector_init(modbus_collector_t *collector, c
     collector->response_queue = NULL;
     collector->next_token = 0U;
     collector->task_handle = NULL;
-
+    
     if (config->collection->point_count == 0U)
     {
         collector->state = MODBUS_COLLECTOR_STATE_DISABLED;

@@ -18,6 +18,7 @@
 `management_transport_tests` 覆盖：
 
 - 静态任务创建、初始化失败及重复初始化的既有回归断言；
+- 无 USB 通知时的看门狗首次上报、499/500 ms 等待边界和连续空闲上报；
 - CDC 首包自动 arm、任务首次运行前收到数据，以及空 packet 后重新 arm；
 - session open/close 对半帧和待重试响应的清理；
 - GET/PUT Configuration、GET_STATUS、RESTART、未知命令及所有结果码映射；
@@ -45,6 +46,8 @@
 接口已经迁移到当前的 `init()` 和 void ISR 通知函数，不再调用已删除的 `activate()` 或断言旧版 ISR 返回值。
 初始化失败、重复初始化、发送匹配、10 ms 重试和日志限频的既有行为断言继续保留；失败时报告生产行为差异。
 已按用户调整后的协议移除半帧 2000 ms 超时及 transaction 去重/缓存重放用例。
+
+2026-09-06 干净构建后的 10 个既有失败、实际值与协议/回归依据见 [已知失败记录](known_failures.md)。
 
 ## 运行
 

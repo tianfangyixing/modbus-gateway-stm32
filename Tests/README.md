@@ -18,7 +18,7 @@ cmake --build $hostTestBuild --parallel
 ctest --test-dir $hostTestBuild --output-on-failure
 ```
 
-构建输出必须放在新的系统临时目录，不复用仓库内的 `Tests/build`。十个 CTest executable 及其主要标签分别为：
+构建输出必须放在新的系统临时目录，不复用仓库内的 `Tests/build`。十一个 CTest executable 及其主要标签分别为：
 
 - `management_frame_tests`：`management;frame`
 - `management_transport_tests`：`management;transport`
@@ -30,6 +30,7 @@ ctest --test-dir $hostTestBuild --output-on-failure
 - `configuration_service_tests`：`configuration;service`
 - `mqtt_publisher_client_id_tests`：`mqtt;client-id`
 - `modbus_collector_codec_tests`：`modbus;collector;codec`
+- `ethernetif_output_tests`：`lwip;ethernet;tx`，边界与覆盖范围见 [LWIP/README.md](LWIP/README.md)
 
 只运行固定种子属性测试：
 
@@ -74,14 +75,21 @@ mbedTLS 配置要求的线程安全 UTC 时间转换。测试启动时为 mbedTL
 
 `support/configuration_service_test_adapter.c` 提供 16 KiB 内存 Flash 和可控的读/擦/写故障注入。它模拟
 Flash 的 `1 -> 0` 编程约束及部分编程失败，不进入固件工程；配置服务的 8 KiB 工作区由生产代码静态持有。
+`support/debug_log.h` 保留日志参数求值并通过标准格式化函数计算长度，隔离 RTT/SystemView 输出边界，
+避免持久化测试引入目标平台的 FreeRTOS 配置。
 
 Management 测试直接链接 `Management/src/management_frame.c` 和 `Management/src/management_transport.c`。
 `support/management/` 只替换 FreeRTOS tick/通知、USB CDC、Configuration、SNTP、MQTT、LwIP netif、日志与
 系统复位这些硬件或调度边界。CRC、流式 parser、transaction/session 和重试状态机均使用生产实现。
 用例与摘要条款的映射见 [Management/README.md](Management/README.md)。
 
+Management 和 MQTT Client ID 测试均包含真实的 `Core/Inc/watchdog.h`，复用 `support/management/` 中的
+主机 FreeRTOS 类型声明；`event_groups.h` 只提供与 FreeRTOS 一致的 `EventBits_t` 类型。
+Management 的 `watchdog_report()` 替身校验任务上下文和事件位并记录次数、虚拟 tick，不改变时间、通知或
+任务调度。测试不链接硬件看门狗或事件组实现。
+
 MQTT 测试以专用测试宏只编译 `MQTT/src/mqtt_publisher.c` 内部的纯 UID 编码逻辑，验证三个 32-bit UID word
-完整保留为 `STM` 前缀的大写 Base32 Client ID，不引入 FreeRTOS、LwIP、TLS 或 HAL。规范映射见
+完整保留为 `STM` 前缀的大写 Base32 Client ID，不链接 FreeRTOS、LwIP、TLS 或 HAL 实现。规范映射见
 [MQTT/README.md](MQTT/README.md)。
 
 Modbus Collector codec 测试链接生产 RTU 编解码器与主机 RS485 adapter，验证 FC01～FC04 的 quantity-1 请求、

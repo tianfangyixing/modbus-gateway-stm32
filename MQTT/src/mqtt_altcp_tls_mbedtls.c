@@ -21,14 +21,7 @@
 #error "MQTT TLS requires MBEDTLS_X509_CHECK_EXTENDED_KEY_USAGE"
 #endif
 
-/*
- * Compile the lwIP adapter through this project-owned translation unit so client authentication is fail-closed
- * without modifying vendor Middleware sources.
- */
 
-void mqtt_tls_require_secure_adapter(void)
-{
-}
 
 static const char *mqtt_tls_broker_hostname;
 

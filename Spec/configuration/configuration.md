@@ -145,7 +145,7 @@ STATIC 模式必须同时满足以下规则：
 - `115200`
 
 `rtu.frame_format` 只允许 `8N1`、`8E1`、`8O1` 和 `8N2`。`rtu.first_byte_timeout_ms`
-必须位于 `50～60000 ms` 闭区间内。
+必须位于 `50～3000 ms` 闭区间内。
 
 违反以上任意一项 Modbus RTU 规则时，函数返回 `CONFIGURATION_VALIDATION_RTU_INVALID`。
 
@@ -271,7 +271,7 @@ broker hostname 匹配，也不判断密钥长度或算法强度。这些检查�
 - Holding Register 和 Input Register 的 `data_type` 只允许 `UINT16` 或 `INT16`。
 - Coil 和 Discrete Input 的 `data_type` 不生效。
 - `poll_interval_ms` 位于 `1000～3600000 ms` 闭区间内。
-- `first_byte_timeout_ms` 位于 `50～5000 ms` 闭区间内。
+- `first_byte_timeout_ms` 位于 `50～3000 ms` 闭区间内。
 - `first_byte_timeout_ms` 与 `poll_interval_ms` 相互独立，不要求前者小于或等于后者。
 - topic 满足本规范 MQTT 自定义消息 topic 的字符规则，长度为 `1～128` 字节。
 - QoS 只允许 `0` 或 `1`。

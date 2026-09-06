@@ -33,6 +33,7 @@
 
 #include "sntp_service.h"
 #include "lwip_random.h"
+#include "watchdog.h"
 
 #define LWIP_HOOK_TCP_ISN(local_ip, local_port, remote_ip, remote_port) lwip_random_u32()
 
@@ -41,6 +42,8 @@
 #define SNTP_GET_SYSTEM_TIME(seconds, microseconds) sntp_service_get_time(&(seconds), &(microseconds))
 
 #define LWIP_ALTCP_TLS_MBEDTLS 1
+
+#define LWIP_TCPIP_THREAD_ALIVE()  watchdog_report(WATCHDOG_EVENT_TCPIP)
 
 // #define LWIP_DEBUG 1
 

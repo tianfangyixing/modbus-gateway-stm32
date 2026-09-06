@@ -33,13 +33,13 @@
 
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
-
+#include "watchdog.h"
 /* USER CODE END 0 */
 
 /* Private define ------------------------------------------------------------*/
 /* The time to block waiting for input. */
 #define TIME_WAITING_FOR_INPUT ( portMAX_DELAY )
-/* Time to block waiting for transmissions to finish */
+/* Total time budget in milliseconds for submitting one packet */
 #define ETHIF_TX_TIMEOUT (2000U)
 /* USER CODE BEGIN OS_THREAD_STACK_SIZE_WITH_RTOS */
 /* Stack size of the interface thread */
@@ -253,11 +253,13 @@ static void low_level_init(struct netif *netif)
 
   /* create the task that handles the ETH_MAC */
 /* USER CODE BEGIN OS_THREAD_NEW_CMSIS_RTOS_V2 */
+  extern void my_ethernetif_input(void* argument);
+
   memset(&attributes, 0x0, sizeof(osThreadAttr_t));
   attributes.name = "EthIf";
   attributes.stack_size = INTERFACE_THREAD_STACK_SIZE;
   attributes.priority = osPriorityRealtime;
-  osThreadNew(ethernetif_input, netif, &attributes);
+  osThreadNew(my_ethernetif_input, netif, &attributes);
 /* USER CODE END OS_THREAD_NEW_CMSIS_RTOS_V2 */
 
 /* USER CODE BEGIN PHY_PRE_CONFIG */
@@ -354,6 +356,8 @@ static void low_level_init(struct netif *netif)
 
 static err_t low_level_output(struct netif *netif, struct pbuf *p)
 {
+  const uint32_t timeout_ticks = pdMS_TO_TICKS(ETHIF_TX_TIMEOUT);
+  uint32_t start_tick = osKernelGetTickCount();
   uint32_t i = 0U;
   struct pbuf *q = NULL;
   err_t errval = ERR_OK;
@@ -361,20 +365,22 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
   memset(Txbuffer, 0 , ETH_TX_DESC_CNT*sizeof(ETH_BufferTypeDef));
 
-  for(q = p; q != NULL; q = q->next)
+  for (q = p; q != NULL; q = q->next)
   {
-    if(i >= ETH_TX_DESC_CNT)
+    if (i >= ETH_TX_DESC_CNT)
+    {
       return ERR_IF;
+    }
 
     Txbuffer[i].buffer = q->payload;
     Txbuffer[i].len = q->len;
 
-    if(i>0)
+    if (i > 0)
     {
       Txbuffer[i-1].next = &Txbuffer[i];
     }
 
-    if(q->next == NULL)
+    if (q->next == NULL)
     {
       Txbuffer[i].next = NULL;
     }
@@ -390,29 +396,62 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
   do
   {
-    if(HAL_ETH_Transmit_IT(&heth, &TxConfig) == HAL_OK)
+    uint32_t elapsed_ticks = osKernelGetTickCount() - start_tick;
+
+    if (!netif_is_up(netif) || !netif_is_link_up(netif) || HAL_ETH_GetState(&heth) != HAL_ETH_STATE_STARTED)
+    {
+      errval = ERR_IF;
+      break;
+    }
+
+    if (elapsed_ticks >= timeout_ticks)
+    {
+      errval = ERR_TIMEOUT;
+      break;
+    }
+
+    if (HAL_ETH_Transmit_IT(&heth, &TxConfig) == HAL_OK)
     {
       errval = ERR_OK;
     }
     else
     {
-
-      if(HAL_ETH_GetError(&heth) & HAL_ETH_ERROR_BUSY)
+      /* A stopped MAC may retain an old BUSY error bit. */
+      if ((HAL_ETH_GetError(&heth) & HAL_ETH_ERROR_BUSY) && HAL_ETH_GetState(&heth) == HAL_ETH_STATE_STARTED)
       {
-        /* Wait for descriptors to become available */
-        osSemaphoreAcquire(TxPktSemaphore, ETHIF_TX_TIMEOUT);
-        HAL_ETH_ReleaseTxPacket(&heth);
-        errval = ERR_BUF;
+        osStatus_t wait_status;
+
+        elapsed_ticks = osKernelGetTickCount() - start_tick;
+        if (elapsed_ticks >= timeout_ticks)
+        {
+          errval = ERR_TIMEOUT;
+          break;
+        }
+
+        /* Wait for descriptors using only the remaining total budget. */
+        wait_status = osSemaphoreAcquire(TxPktSemaphore, timeout_ticks - elapsed_ticks);
+        if (HAL_ETH_ReleaseTxPacket(&heth) != HAL_OK || (wait_status != osOK && wait_status != osErrorTimeout))
+        {
+          errval = ERR_IF;
+        }
+        else
+        {
+          /* Recheck link state and the deadline before another submission. */
+          errval = ERR_BUF;
+        }
       }
       else
       {
         /* Other error */
-        pbuf_free(p);
-        errval =  ERR_IF;
+        errval = ERR_IF;
       }
     }
-  }while(errval == ERR_BUF);
+  } while (errval == ERR_BUF);
 
+  if (errval != ERR_OK)
+  {
+    pbuf_free(p);
+  }
   return errval;
 }
 
@@ -820,7 +859,7 @@ void ethernet_link_thread(void* argument)
   }
 
 /* USER CODE BEGIN ETH link Thread core code for User BSP */
-
+    watchdog_report(WATCHDOG_EVENT_ETHERNET_LINK);
 /* USER CODE END ETH link Thread core code for User BSP */
 
     osDelay(100);
@@ -896,5 +935,29 @@ void HAL_ETH_TxFreeCallback(uint32_t * buff)
 }
 
 /* USER CODE BEGIN 8 */
+void my_ethernetif_input(void* argument)
+{
+  struct pbuf *p = NULL;
+  struct netif *netif = (struct netif *) argument;
 
+  for( ;; )
+  {
+    watchdog_report(WATCHDOG_EVENT_ETHERNET_RX);
+    if (osSemaphoreAcquire(RxPktSemaphore, 100) == osOK)
+    {
+
+      do
+      {
+        p = low_level_input( netif );
+        if (p != NULL)
+        {
+          if (netif->input( p, netif) != ERR_OK )
+          {
+            pbuf_free(p);
+          }
+        }
+      } while(p!=NULL);
+    }
+  }
+}
 /* USER CODE END 8 */

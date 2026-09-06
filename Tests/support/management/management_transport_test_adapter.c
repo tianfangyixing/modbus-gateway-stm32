@@ -2,6 +2,7 @@
 
 #include "lwip/netif.h"
 #include "task.h"
+#include "watchdog.h"
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -70,6 +71,8 @@ static void pause_task(void)
 
 static void *run_task_thread(void *argument)
 {
+    check_thread_result(pthread_mutex_lock(&task_mutex));
+    check_thread_result(pthread_mutex_unlock(&task_mutex));
     management_transport_test_assert(argument == NULL);
     task_entry(task_argument);
     management_transport_test_assert(false);
@@ -278,6 +281,15 @@ TickType_t xTaskGetTickCount(void)
 TickType_t xTaskGetTickCountFromISR(void)
 {
     return management_transport_test_state.tick;
+}
+
+void watchdog_report(EventBits_t task_bit)
+{
+    management_transport_test_assert(task_started && pthread_equal(pthread_self(), task_thread) != 0);
+    management_transport_test_assert(management_transport_test_state.critical_depth == 0U);
+    management_transport_test_assert(task_bit == WATCHDOG_EVENT_MANAGEMENT);
+    management_transport_test_state.watchdog_report_count++;
+    management_transport_test_state.last_watchdog_report_tick = management_transport_test_state.tick;
 }
 
 int management_transport_test_log(const char *format, ...)

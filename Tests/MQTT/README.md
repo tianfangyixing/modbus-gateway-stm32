@@ -1,8 +1,9 @@
 # MQTT Publisher 派生 Client ID 测试
 
 `mqtt_publisher_client_id_tests` 以 `MQTT_PUBLISHER_CLIENT_ID_TEST` 模式编译
-`MQTT/src/mqtt_publisher.c`。该模式只编译 Publisher 内部的纯 UID 编码逻辑和测试钩子，不引入
-FreeRTOS、LwIP MQTT client、TLS 或 STM32 HAL，也不形成生产公开 API。
+`MQTT/src/mqtt_publisher.c`。该模式只编译 Publisher 内部的纯 UID 编码逻辑和测试钩子，不链接
+FreeRTOS、LwIP MQTT client、TLS 或 STM32 HAL 实现，也不形成生产公开 API。编译真实的看门狗公共头时，
+仅使用 `support/management/` 提供的主机 RTOS 类型声明。
 
 ## 规范条款映射
 

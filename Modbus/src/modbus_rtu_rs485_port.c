@@ -13,7 +13,7 @@
 #include "main.h"
 #include "configuration.h"
 
-#define MAX_WAITING_REMAINING_RESPONSE_MS (5000)
+#define MAX_WAITING_REMAINING_RESPONSE_MS (3000)
 
 
 typedef enum

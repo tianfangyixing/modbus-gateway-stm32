@@ -1,4 +1,5 @@
 #include "mqtt_publisher.h"
+#include "watchdog.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -69,6 +70,7 @@ const char *mqtt_publisher_test_client_id_from_uid(uint32_t uid_word0, uint32_t 
 #include "lwip/altcp_tls.h"
 #include "lwip/api.h"
 #include "lwip/apps/mqtt.h"
+#include "lwip/dns.h"
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
 #include "main.h"
@@ -81,7 +83,8 @@ const char *mqtt_publisher_test_client_id_from_uid(uint32_t uid_word0, uint32_t 
 
 #define MQTT_CONNECTION_TASK_STACK_DEPTH 768U
 #define MQTT_CONNECTION_TASK_PRIORITY 22U
-#define MQTT_CONNECTION_RETRY_INTERVAL_MS 15000U
+#define MQTT_CONNECTION_CHECK_INTERVAL_MS 3000U
+#define MQTT_CONNECTION_CONNECTING_TIMEOUT_MS 15000U
 #define PUBLISH_QUEUE_LENGTH (4)
 
 typedef enum
@@ -95,72 +98,25 @@ typedef enum
 
 static StackType_t mqtt_connection_task_stack[MQTT_CONNECTION_TASK_STACK_DEPTH];
 static StaticTask_t mqtt_connection_task_buffer;
+
 static volatile bool publish_slot_available[PUBLISH_QUEUE_LENGTH];
 static volatile mqtt_publisher_publish_callback_t publish_slot_cb[PUBLISH_QUEUE_LENGTH];
 static void *volatile publish_slot_context[PUBLISH_QUEUE_LENGTH];
-static StaticSemaphore_t publish_slot_mutex_buffer;
-static SemaphoreHandle_t publish_slot_mutex;
+static volatile mqtt_publisher_state_t mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISABLED;
+static TickType_t start_connecting_tick;
+
 static const configuration_mqtt_t *mqtt_configuration;
 static struct mqtt_connect_client_info_t mqtt_client_info;
-static mqtt_client_t *mqtt_client;
 static struct altcp_tls_config *mqtt_tls_config;
-static volatile bool connected;
-static volatile mqtt_publisher_state_t mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISABLED;
-static bool mqtt_initialized;
+static mqtt_client_t *mqtt_client;
 
 static void mqtt_connection_task(void *argument);
 
-static mqtt_prerequisite_status_t mqtt_get_prerequisite_status(void)
-{
-    if (netif_default == NULL)
-    {
-        return MQTT_PREREQUISITE_NETWORK_INTERFACE;
-    }
-    if (!netif_is_up(netif_default))
-    {
-        return MQTT_PREREQUISITE_NETWORK_INTERFACE_DOWN;
-    }
-    if (!netif_is_link_up(netif_default))
-    {
-        return MQTT_PREREQUISITE_NETWORK_LINK_DOWN;
-    }
-    if (!sntp_service_is_synchronized())
-    {
-        return MQTT_PREREQUISITE_TIME_SYNC;
-    }
-    return MQTT_PREREQUISITE_READY;
-}
-
-static void mqtt_log_prerequisite_status(mqtt_prerequisite_status_t status)
-{
-    switch (status)
-    {
-    case MQTT_PREREQUISITE_NETWORK_INTERFACE:
-        debug_log_printf("MQTT waiting: network interface is not initialized\r\n");
-        break;
-
-    case MQTT_PREREQUISITE_NETWORK_INTERFACE_DOWN:
-        debug_log_printf("MQTT waiting: network interface is down\r\n");
-        break;
-
-    case MQTT_PREREQUISITE_NETWORK_LINK_DOWN:
-        debug_log_printf("MQTT waiting: Ethernet link is down\r\n");
-        break;
-
-    case MQTT_PREREQUISITE_TIME_SYNC:
-        debug_log_printf("MQTT waiting: SNTP time is not synchronized\r\n");
-        break;
-
-    default:
-        break;
-    }
-}
 
 static bool mqtt_ensure_tls_config(void)
 {
     bool result;
 
-    mqtt_tls_require_secure_adapter();
     LOCK_TCPIP_CORE();
 
     result = mqtt_tls_policy_set_broker_hostname((const char *)mqtt_configuration->broker_address.bytes);
@@ -187,19 +143,94 @@ static bool mqtt_ensure_tls_config(void)
     return result;
 }
 
+/* 由 TCP/IP 核心锁保护，静态地址用于接收超时后仍可能到来的回调。 */
+static ip_addr_t dns_resolve_addr;
+static err_t dns_resolve_result = ERR_OK;
+
+static void mqtt_dns_found(const char *name, const ip_addr_t *ipaddr, void *callback_arg)
+{
+    ip_addr_t *resolved_addr = callback_arg;
+
+    if (ipaddr == NULL)
+    {
+        dns_resolve_result = ERR_VAL;
+        debug_log_printf("MQTT DNS failed: %s\r\n", name);
+        return;
+    }
+
+    *resolved_addr = *ipaddr;
+    dns_resolve_result = ERR_OK;
+
+    debug_log_printf("MQTT DNS resolved: %s -> %s\r\n", name, ipaddr_ntoa(ipaddr));
+}
+
 static err_t mqtt_resolve_host(ip_addr_t *mqtt_ip)
 {
-    const char *broker_hostname = (const char *)mqtt_configuration->broker_address.bytes;
-    err_t result = netconn_gethostbyname(broker_hostname, mqtt_ip);
-
-    if (result != ERR_OK)
+    if (mqtt_ip == NULL)
     {
-        debug_log_printf("MQTT DNS lookup failed: %s, err=%d\r\n", broker_hostname, (int)result);
+        return ERR_ARG;
+    }
+
+    const char *broker_hostname = (const char *)mqtt_configuration->broker_address.bytes;
+    const TickType_t timeout_ticks = pdMS_TO_TICKS(3000U);
+    const TickType_t poll_ticks = pdMS_TO_TICKS(100U);
+    err_t result;
+
+    LOCK_TCPIP_CORE();
+
+    /* 上次等待虽然超时，但底层查询可能尚未结束。 */
+    if (dns_resolve_result == ERR_INPROGRESS)
+    {
+        UNLOCK_TCPIP_CORE();
+        return ERR_INPROGRESS;
+    }
+
+    dns_resolve_result = dns_gethostbyname(broker_hostname, mqtt_ip, mqtt_dns_found, &dns_resolve_addr);
+    result = dns_resolve_result;
+
+    UNLOCK_TCPIP_CORE();
+
+    /* 立即成功或发起失败，都不需要等待回调。 */
+    if (result != ERR_INPROGRESS)
+    {
         return result;
     }
 
-    debug_log_printf("MQTT DNS resolved: %s -> %s\r\n", broker_hostname, ipaddr_ntoa(mqtt_ip));
-    return ERR_OK;
+    TickType_t started_tick = xTaskGetTickCount();
+
+    for (;;)
+    {
+        LOCK_TCPIP_CORE();
+
+        result = dns_resolve_result;
+
+        if (result == ERR_OK)
+        {
+            *mqtt_ip = dns_resolve_addr;
+        }
+
+        UNLOCK_TCPIP_CORE();
+
+        if (result != ERR_INPROGRESS)
+        {
+            return result;
+        }
+
+        TickType_t elapsed_ticks = xTaskGetTickCount() - started_tick;
+
+        if (elapsed_ticks >= timeout_ticks)
+        {
+            debug_log_printf("MQTT DNS lookup timed out after 3000 ms: %s\r\n", broker_hostname);
+            return ERR_TIMEOUT;
+        }
+
+        watchdog_report(WATCHDOG_EVENT_MQTT);
+
+        TickType_t remaining_ticks = timeout_ticks - elapsed_ticks;
+        TickType_t delay_ticks = remaining_ticks < poll_ticks ? remaining_ticks : poll_ticks;
+
+        vTaskDelay(delay_ticks);
+    }
 }
 
 static void mqtt_publish_callback(void *argument, err_t result)
@@ -213,11 +244,9 @@ static void mqtt_publish_callback(void *argument, err_t result)
         return;
     }
 
-    xSemaphoreTake(publish_slot_mutex, portMAX_DELAY);
     callback = publish_slot_cb[index];
     context = publish_slot_context[index];
     publish_slot_available[index] = true;
-    xSemaphoreGive(publish_slot_mutex);
 
     if (callback == NULL)
     {
@@ -261,7 +290,6 @@ static void mqtt_complete_publish_slots(mqtt_publisher_publish_result_t result)
         mqtt_publisher_publish_callback_t callback = NULL;
         void *context = NULL;
 
-        xSemaphoreTake(publish_slot_mutex, portMAX_DELAY);
         if (!publish_slot_available[index])
         {
             callback = publish_slot_cb[index];
@@ -270,7 +298,6 @@ static void mqtt_complete_publish_slots(mqtt_publisher_publish_result_t result)
             publish_slot_cb[index] = NULL;
             publish_slot_context[index] = NULL;
         }
-        xSemaphoreGive(publish_slot_mutex);
 
         if (callback != NULL)
         {
@@ -279,39 +306,20 @@ static void mqtt_complete_publish_slots(mqtt_publisher_publish_result_t result)
     }
 }
 
-static void mqtt_disconnect_for_network_loss(void)
-{
-    LOCK_TCPIP_CORE();
-    connected = false;
-    if (mqtt_client != NULL)
-    {
-        mqtt_disconnect(mqtt_client);
-    }
-    UNLOCK_TCPIP_CORE();
 
-    mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
-    mqtt_complete_publish_slots(MQTT_PUBLISHER_PUBLISH_NOT_CONNECTED);
-}
 
 static void mqtt_connection_cb(mqtt_client_t *client, void *argument, mqtt_connection_status_t status)
 {
-    if (client != mqtt_client || argument != &mqtt_client_info)
-    {
-        return;
-    }
-
     if (status == MQTT_CONNECT_ACCEPTED)
     {
-        connected = true;
         mqtt_publisher_state = MQTT_PUBLISHER_STATE_CONNECTED;
         debug_log_printf("MQTT connection established\r\n");
         mqtt_publish_online_message(client);
         return;
     }
 
-    connected = false;
+    // 完成失败回调
     mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
-
     mqtt_complete_publish_slots(MQTT_PUBLISHER_PUBLISH_NOT_CONNECTED);
     debug_log_printf("MQTT connection unavailable, status=%d\r\n", (int)status);
 }
@@ -319,80 +327,76 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *argument, mqtt_conne
 static void mqtt_connection_task(void *argument)
 {
     ip_addr_t mqtt_ip;
-    err_t connect_result;
-
-    if (argument != NULL)
-    {
-        mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
-    }
 
     for (;;)
     {
-        mqtt_prerequisite_status_t prerequisite_status;
-
-
-        prerequisite_status = mqtt_get_prerequisite_status();
-
-        /* 必须先检查线路是否断开。因为线路断开，但mqtt必不能立刻得知connect回调，使得disconnect，最长时间在keepalive时发现断开连接 */
-
-        if (prerequisite_status == MQTT_PREREQUISITE_NETWORK_INTERFACE ||
-            prerequisite_status == MQTT_PREREQUISITE_NETWORK_INTERFACE_DOWN ||
-            prerequisite_status == MQTT_PREREQUISITE_NETWORK_LINK_DOWN)
+        watchdog_report(WATCHDOG_EVENT_MQTT);
+        
+        LOCK_TCPIP_CORE();
+        if(mqtt_publisher_state == MQTT_PUBLISHER_STATE_CONNECTED)
         {
-            mqtt_disconnect_for_network_loss();
-            mqtt_log_prerequisite_status(prerequisite_status);
-            vTaskDelay(pdMS_TO_TICKS(MQTT_CONNECTION_RETRY_INTERVAL_MS));
+            UNLOCK_TCPIP_CORE();
+            vTaskDelay(MQTT_CONNECTION_CHECK_INTERVAL_MS);
             continue;
         }
-        else if(prerequisite_status != MQTT_PREREQUISITE_READY)
+        else if(mqtt_publisher_state == MQTT_PUBLISHER_STATE_CONNECTING)
         {
-            mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
-            mqtt_log_prerequisite_status(prerequisite_status);
-            vTaskDelay(pdMS_TO_TICKS(MQTT_CONNECTION_RETRY_INTERVAL_MS));
+            TickType_t now_tick = xTaskGetTickCount();
+
+            if(now_tick - start_connecting_tick >= pdMS_TO_TICKS(MQTT_CONNECTION_CONNECTING_TIMEOUT_MS))
+            {
+                mqtt_disconnect(mqtt_client);
+                mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
+            }
+            else
+            {
+                UNLOCK_TCPIP_CORE();
+                if(MQTT_CONNECTION_CONNECTING_TIMEOUT_MS - (now_tick - start_connecting_tick) > MQTT_CONNECTION_CHECK_INTERVAL_MS)
+                {
+                    vTaskDelay(MQTT_CONNECTION_CHECK_INTERVAL_MS);
+                }
+                else
+                {
+                    vTaskDelay(MQTT_CONNECTION_CONNECTING_TIMEOUT_MS - (now_tick - start_connecting_tick));
+                }
+                continue;
+            }
+        }
+        UNLOCK_TCPIP_CORE();
+
+        if (!sntp_service_is_synchronized())
+        {
+            vTaskDelay(MQTT_CONNECTION_CHECK_INTERVAL_MS);
             continue;
         }
 
-        if (connected)
-        {
-            vTaskDelay(pdMS_TO_TICKS(MQTT_CONNECTION_RETRY_INTERVAL_MS));
-            continue;
-        }
-
-        mqtt_publisher_state = MQTT_PUBLISHER_STATE_CONNECTING;
         if (!mqtt_ensure_tls_config() || mqtt_resolve_host(&mqtt_ip) != ERR_OK)
         {
-            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
-            vTaskDelay(pdMS_TO_TICKS(MQTT_CONNECTION_RETRY_INTERVAL_MS));
+            vTaskDelay(MQTT_CONNECTION_CHECK_INTERVAL_MS);
             continue;
         }
 
         mqtt_client_info.tls_config = mqtt_tls_config;
+
         LOCK_TCPIP_CORE();
-        if (connected)
-        {
-            UNLOCK_TCPIP_CORE();
-            vTaskDelay(pdMS_TO_TICKS(MQTT_CONNECTION_RETRY_INTERVAL_MS));
-            continue;
-        }
-        connect_result = mqtt_client_connect(mqtt_client, &mqtt_ip, mqtt_configuration->broker_port,
-                                             mqtt_connection_cb, &mqtt_client_info, &mqtt_client_info);
-        if (connect_result == ERR_ISCONN)
-        {
-            mqtt_disconnect(mqtt_client);
-        }
-        UNLOCK_TCPIP_CORE();
+
+        err_t connect_result = mqtt_client_connect(mqtt_client, &mqtt_ip, mqtt_configuration->broker_port,
+                                             mqtt_connection_cb, NULL, &mqtt_client_info);
         if (connect_result == ERR_OK)
         {
+            start_connecting_tick = xTaskGetTickCount();
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_CONNECTING;
             debug_log_printf("MQTT connection attempt started: %s:%u\r\n",
                              (const char *)mqtt_configuration->broker_address.bytes,
                              (unsigned int)mqtt_configuration->broker_port);
         }
         else
         {
-            mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
             debug_log_printf("MQTT connection attempt rejected, err=%d\r\n", (int)connect_result);
+            mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
         }
-        vTaskDelay(pdMS_TO_TICKS(MQTT_CONNECTION_RETRY_INTERVAL_MS));
+        UNLOCK_TCPIP_CORE();
+        vTaskDelay(MQTT_CONNECTION_CHECK_INTERVAL_MS);
     }
 }
 
@@ -413,25 +417,18 @@ void mqtt_publisher_init(void)
     TaskHandle_t connection_task_handle;
     int index;
 
-    if (mqtt_initialized)
-    {
-        debug_log_printf("MQTT publisher is already initialized\r\n");
-        return;
-    }
+    debug_log_printf("MQTT publisher is initing...");
+
     active_configuration = configuration_service_active();
     if (active_configuration == NULL)
     {
-        mqtt_configuration = NULL;
-        mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
         debug_log_printf("MQTT publisher initialization failed: active configuration unavailable\r\n");
         Error_Handler();
-        return;
     }
 
     mqtt_configuration = &active_configuration->mqtt;
     if (mqtt_configuration->mode == CONFIGURATION_MQTT_MODE_DISABLED)
     {
-        mqtt_initialized = true;
         mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISABLED;
         debug_log_printf("MQTT publisher disabled by active configuration\r\n");
         return;
@@ -467,33 +464,27 @@ void mqtt_publisher_init(void)
     }
     mqtt_client_info.tls_config = NULL;
 
-    publish_slot_mutex = xSemaphoreCreateMutexStatic(&publish_slot_mutex_buffer);
-
     for (index = 0; index < PUBLISH_QUEUE_LENGTH; index++)
     {
         publish_slot_available[index] = true;
         publish_slot_cb[index] = NULL;
         publish_slot_context[index] = NULL;
     }
+    mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
 
     LOCK_TCPIP_CORE();
     mqtt_client = mqtt_client_new();
     UNLOCK_TCPIP_CORE();
     if (mqtt_client == NULL)
     {
-        mqtt_publisher_state = MQTT_PUBLISHER_STATE_ERROR;
         debug_log_printf("MQTT publisher initialization failed: MQTT client unavailable\r\n");
         Error_Handler();
     }
 
-    connected = false;
-    vTaskSuspendAll();
     connection_task_handle = xTaskCreateStatic(mqtt_connection_task, "mqtt_conn", MQTT_CONNECTION_TASK_STACK_DEPTH,
                                                NULL, MQTT_CONNECTION_TASK_PRIORITY, mqtt_connection_task_stack,
                                                &mqtt_connection_task_buffer);
-    mqtt_initialized = true;
-    mqtt_publisher_state = MQTT_PUBLISHER_STATE_DISCONNECTED;
-    xTaskResumeAll();
+
     debug_log_printf("MQTT publisher started for %s:%u\r\n",
                      (const char *)mqtt_configuration->broker_address.bytes,
                      (unsigned int)mqtt_configuration->broker_port);
@@ -512,23 +503,19 @@ mqtt_publisher_publish_result_t mqtt_publisher_publish(const char *topic, uint16
     {
         return MQTT_PUBLISHER_PUBLISH_INVALID_ARGUMENT;
     }
-    if (!mqtt_initialized || mqtt_publisher_state == MQTT_PUBLISHER_STATE_DISABLED)
-    {
-        return MQTT_PUBLISHER_PUBLISH_DISABLED;
-    }
-    if (!connected)
-    {
-        return MQTT_PUBLISHER_PUBLISH_NOT_CONNECTED;
-    }
 
     LOCK_TCPIP_CORE();
-    if (!connected)
+    if (mqtt_publisher_state == MQTT_PUBLISHER_STATE_DISABLED)
+    {
+        UNLOCK_TCPIP_CORE();
+        return MQTT_PUBLISHER_PUBLISH_DISABLED;
+    }
+    else if(mqtt_publisher_state != MQTT_PUBLISHER_STATE_CONNECTED)
     {
         UNLOCK_TCPIP_CORE();
         return MQTT_PUBLISHER_PUBLISH_NOT_CONNECTED;
     }
 
-    xSemaphoreTake(publish_slot_mutex, portMAX_DELAY);
     for (int i = 0; i < PUBLISH_QUEUE_LENGTH; i++)
     {
         if (publish_slot_available[i])
@@ -540,7 +527,6 @@ mqtt_publisher_publish_result_t mqtt_publisher_publish(const char *topic, uint16
             break;
         }
     }
-    xSemaphoreGive(publish_slot_mutex);
     if (index < 0)
     {
         UNLOCK_TCPIP_CORE();
@@ -552,31 +538,25 @@ mqtt_publisher_publish_result_t mqtt_publisher_publish(const char *topic, uint16
 
     if (result != ERR_OK)
     {
-        xSemaphoreTake(publish_slot_mutex, portMAX_DELAY);
         publish_slot_available[index] = true;
-        xSemaphoreGive(publish_slot_mutex);
     }
     UNLOCK_TCPIP_CORE();
 
-    if (result == ERR_OK)
+    switch (result)
     {
-        return MQTT_PUBLISHER_PUBLISH_OK;
+        case ERR_OK:
+            return MQTT_PUBLISHER_PUBLISH_OK;
+        case ERR_CONN:
+            return MQTT_PUBLISHER_PUBLISH_NOT_CONNECTED;
+        case ERR_MEM:
+            return MQTT_PUBLISHER_PUBLISH_NO_RESOURCE;
+        case ERR_ARG:
+            return MQTT_PUBLISHER_PUBLISH_INVALID_ARGUMENT;
+        default:
+            debug_log_printf("mqtt publish unexpected result = %d\r\n", (int)result);
+            Error_Handler();
+			return MQTT_PUBLISHER_PUBLISH_UNKNOWN_ERROR;
     }
-    if (result == ERR_CONN)
-    {
-        return MQTT_PUBLISHER_PUBLISH_NOT_CONNECTED;
-    }
-    if (result == ERR_MEM)
-    {
-        return MQTT_PUBLISHER_PUBLISH_NO_RESOURCE;
-    }
-    if (result == ERR_ARG)
-    {
-        return MQTT_PUBLISHER_PUBLISH_INVALID_ARGUMENT;
-    }
-
-    debug_log_printf("MQTT publish rejected, result=%d\r\n", (int)result);
-    return MQTT_PUBLISHER_PUBLISH_NO_RESOURCE;
 }
 
 mqtt_publisher_state_t mqtt_publisher_get_state(void)
