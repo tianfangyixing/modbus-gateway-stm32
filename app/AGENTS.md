@@ -18,7 +18,7 @@
 │   └── Src/                         # 系统启动、外设、中断及 RTOS 任务代码
 ├── Configuration/
 │   ├── include/                     # 配置模型、二进制编解码与持久化服务公共接口
-│   └── src/                         # 配置校验、Schema v1 codec 与双槽持久化实现
+│   └── src/                         # 配置校验、Schema v2 codec 与双槽持久化实现
 ├── ExternalFlash/
 │   ├── include/                     # W25Q128 外部 Flash 公共接口
 │   └── src/                         # SPI/DMA 读、写与扇区擦除实现
@@ -40,7 +40,7 @@
 │   ├── management/                  # USB CDC Management Frame 线路协议规范
 │   ├── modbus/                      # Modbus 与 Collector 的 API 和行为规范
 │   └── mqtt/                        # MQTT Publisher 的运行与 TLS 行为规范
-├── Tests/                           # CMake/CTest 主机黑盒测试、adapter 与固定夹具
+├── Tests/                           # CMake/CTest 生产代码主机回归、边界 adapter 与独立固定夹具
 ├── LWIP/
 │   ├── App/                         # LwIP 初始化和应用层集成
 │   └── Target/                      # 以太网接口及 LwIP 配置
@@ -89,6 +89,9 @@
 - `USB_DEVICE/` 由 CubeMX 生成，`Middlewares/ST/STM32_USB_Device_Library/` 为厂商中间件；USB CDC 同时被调试日志使用。
 - `Tests/` 只构建主机黑盒测试，不是固件构建入口；测试替身只能隔离硬件、RTOS 或网络边界，不得复制生产
   算法作为预期。失败时不得删除、跳过或放宽既有用例与断言。
+- `Tests/CMakeLists.txt` 是实际主机测试入口，共用真实配置模型、codec、Mbed TLS 和独立固定夹具。
+  Windows 可从仓库根运行 `app/Tools/test_configuration_v2.ps1`；构建与报告写入 `artifacts/configuration_v2/host-tests/`。
+  主机替身覆盖不等于 USB、Flash DMA、物理断电、TLS 建连或任务栈余量的板端实测。
 - `Drivers/` 主要是厂商代码，除非确有必要，不应直接修改；`Middlewares/**` 是绝对只读边界，只能读取核对，
   不得创建、修改、删除、移动、重命名或格式化其中任何内容，一个字节也不能改变。
 - `Core/`、`LWIP/`、`MBEDTLS/`、`USB_DEVICE/` 等 CubeMX 生成文件中的自定义代码，应尽量放在 `USER CODE BEGIN` 与 `USER CODE END` 区域内，避免重新生成工程时丢失。

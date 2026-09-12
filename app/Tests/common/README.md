@@ -19,8 +19,8 @@ ctest --test-dir "$env:TEMP/configuration-v2-tests" --output-on-failure
 
 `CONFIGURATION_TEST_SANITIZERS=ON` enables AddressSanitizer and UndefinedBehaviorSanitizer on supported
 non-Windows GCC/Clang hosts. Build directories and all fetched dependencies stay outside Middlewares.
-The root CMake entry currently includes only `common` and `configuration_codec`; integration owns
-adding Service, Management and MQTT suites.
+The integrated root CMake entry includes `common`, `configuration_codec`, `configuration_service`,
+`management`, and `mqtt`. Run the root entry to exercise every suite.
 
 ## Public targets and boundaries
 
