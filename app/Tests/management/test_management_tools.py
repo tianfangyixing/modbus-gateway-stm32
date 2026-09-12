@@ -84,5 +84,51 @@ class ManagementToolsTests(unittest.TestCase):
                 self.assertEqual(struct.unpack_from("<I", cdc.writes[0], 9)[0], 8478)
 
 
+    def test_configuration_acceptance_wire_vectors(self):
+        import management_configuration_validation as acceptance
+        # Byte patterns here test framing only. Real fixture/model validity is
+        # covered by the production codec + Service Transport executable.
+        maximum = b"\x02" + b"X" * 8474
+        default = b"\x02" + bytes(47)
+        vectors = acceptance.prepare_vectors(maximum, default)
+        self.assertEqual(len(vectors["maximum_put.bin"]), 8492)
+        self.assertEqual(len(vectors["maximum_get_response.bin"]), 8494)
+        self.assertEqual(len(vectors["invalid_8476_put.bin"]), 8493)
+        frames = {name: wire.ManagementFrameParser().feed(data)[0] for name, data in vectors.items()}
+        self.assertEqual(frames["maximum_put.bin"].payload, maximum)
+        self.assertEqual(frames["maximum_get_response.bin"].payload, b"\0\0" + maximum)
+        self.assertEqual(frames["v1_default_put.bin"].payload, b"\x01" + default[1:])
+        for bad in (maximum[:-1], maximum + b"\0", b"\x01" + maximum[1:]):
+            with self.assertRaises(ValueError):
+                acceptance.prepare_vectors(bad, default)
+
+    def test_configuration_acceptance_response_checks(self):
+        import management_configuration_validation as acceptance
+        class Cdc:
+            def __init__(self, response):
+                self.pending = bytearray(response)
+                self.written = b""
+            def write(self, data):
+                self.written += data
+                return len(data)
+            @property
+            def in_waiting(self):
+                return len(self.pending)
+            def read(self, count):
+                result = bytes(self.pending[:count])
+                del self.pending[:count]
+                return result
+        ok = wire.encode_management_frame(0x82, 123, b"\0\0")
+        cdc = Cdc(ok)
+        self.assertEqual(acceptance.exchange(cdc, wire.ManagementFrameParser(), 2, 123, b"\2", 0.1).raw, ok)
+        self.assertEqual(wire.ManagementFrameParser().feed(cdc.written)[0].message_type, 2)
+        for bad in (wire.encode_management_frame(0x82, 124, b"\0\0"),
+                    wire.encode_management_frame(0x82, 123, b"\x03\0"),
+                    wire.encode_management_frame(0x82, 123, b"\0\0x"),
+                    wire.encode_management_frame(0x81, 123, b"\0\0")):
+            with self.assertRaises(RuntimeError):
+                acceptance.exchange(Cdc(bad), wire.ManagementFrameParser(), 2, 123, b"\2", 0.1)
+
+
 if __name__ == "__main__":
     unittest.main()

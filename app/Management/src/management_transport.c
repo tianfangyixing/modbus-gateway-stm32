@@ -52,15 +52,20 @@
 #define MANAGEMENT_RESULT_NOT_READY UINT16_C(6)
 #define MANAGEMENT_RESULT_INTERNAL_ERROR UINT16_C(7)
 
-#if CONFIGURATION_V1_MAX_PAYLOAD_LENGTH > (MANAGEMENT_FRAME_MAX_PAYLOAD_LENGTH - UINT32_C(2))
-#error "Configuration payload does not fit in a Management response"
+#if CONFIGURATION_V2_MAX_PAYLOAD_LENGTH != (MANAGEMENT_FRAME_MAX_PAYLOAD_LENGTH - UINT32_C(2))
+#error "Management frame limit must equal the v2 configuration limit plus the result code"
 #endif
 
 #define MANAGEMENT_TRANSPORT_MAX_RESPONSE_PAYLOAD_LENGTH \
-    (UINT32_C(2) + CONFIGURATION_V1_MAX_PAYLOAD_LENGTH)
+    (UINT32_C(2) + CONFIGURATION_V2_MAX_PAYLOAD_LENGTH)
 
 #define RX_BUF_MAX_LEN 128
-#define TX_BUF_MAX_LEN (MANAGEMENT_FRAME_HEADER_LENGTH + MANAGEMENT_TRANSPORT_MAX_RESPONSE_PAYLOAD_LENGTH + MANAGEMENT_FRAME_CRC_LENGTH)
+#define TX_BUF_MAX_LEN \
+    (MANAGEMENT_FRAME_HEADER_LENGTH + MANAGEMENT_TRANSPORT_MAX_RESPONSE_PAYLOAD_LENGTH + MANAGEMENT_FRAME_CRC_LENGTH)
+
+#if TX_BUF_MAX_LEN != MANAGEMENT_FRAME_MAX_LENGTH || TX_BUF_MAX_LEN > UINT16_MAX
+#error "Management TX buffer must cover a complete frame and fit the USB transfer length"
+#endif
 
 // 被isr和任务访问
 static volatile uint32_t session_id;
@@ -78,7 +83,7 @@ static volatile bool session_tx_completed = false;
 // 仅在任务中访问
 static uint8_t tx_buf[TX_BUF_MAX_LEN];
 static uint32_t tx_len;
-static uint32_t last_session_id = 0U;
+static volatile uint32_t last_session_id = 0U; // ISR uses the state only for this processed session.
 static uint8_t rx_buf_copy[RX_BUF_MAX_LEN];
 static uint8_t rx_buf_len = 0U;
 static bool tx_successful = false;
@@ -165,7 +170,7 @@ static void management_transport_dispatch_get_active_configuration(const managem
         }
         else if (configuration_binary_encode(active_configuration,
                                              &tx_buf[MANAGEMENT_FRAME_HEADER_LENGTH + 2U],
-                                             CONFIGURATION_V1_MAX_PAYLOAD_LENGTH, &configuration_length) !=
+                                             CONFIGURATION_V2_MAX_PAYLOAD_LENGTH, &configuration_length) !=
                  CONFIGURATION_BINARY_CODEC_OK)
         {
             management_frame_write_u16_le(&tx_buf[MANAGEMENT_FRAME_HEADER_LENGTH],
@@ -377,9 +382,13 @@ static void management_transport_handle_frame(const management_frame_view_t *fra
 {
     configASSERT(context == NULL);
 
-    management_transport_dispatch_request(frame);
+    if (management_state != MANAGEMENT_STATE_RECVIVING)
+    {
+        return;
+    }
 
     management_state = MANAGEMENT_STATE_SENDING;
+    management_transport_dispatch_request(frame);
 }
 
 
@@ -409,6 +418,7 @@ static void management_transport_process(void)
             management_state = MANAGEMENT_STATE_RECVIVING;
             last_session_id = session_id;
             tx_len = 0;
+            rx_buf_len = 0U;
             tx_successful = false;
             reset_pending = 0U;
             management_frame_parser_reset(&management_parser);
@@ -418,6 +428,10 @@ static void management_transport_process(void)
             management_state = MANAGEMENT_STATE_IDLE;
             last_session_id = session_id;
             reset_pending = 0;
+            rx_buf_len = 0U;
+            tx_len = 0U;
+            tx_successful = false;
+            management_frame_parser_reset(&management_parser);
             taskEXIT_CRITICAL();
             continue;
         }
@@ -442,24 +456,36 @@ static void management_transport_process(void)
 
         // 处理接收或发送事件，与重置处理
 
-        if (reset_pending)
+        if (reset_pending && tx_successful)
         {
             vTaskDelay(pdMS_TO_TICKS(500));
+            taskENTER_CRITICAL();
+            if (last_session_id == session_id && session_is_open)
+            {
+                reset_pending = false;
 #if defined(MANAGEMENT_TRANSPORT_TEST)
-            management_transport_test_system_reset();
+                management_transport_test_system_reset();
 #else
-            NVIC_SystemReset();
+                NVIC_SystemReset();
 #endif
+            }
+            taskEXIT_CRITICAL();
         }
 
         // 接收消息的处理
 
         if (rx_buf_len != 0)
         {
-            // 帧错误，直接进入FAULT，必须重新插拔后才能使用
-            if (management_frame_parser_feed(&management_parser, rx_buf_copy, rx_buf_len, management_transport_handle_frame, NULL) != MANAGEMENT_FRAME_OK)
+            // Only internal parser capacity/argument errors are fatal; wire errors recover silently.
+            if (management_frame_parser_feed(&management_parser, rx_buf_copy, rx_buf_len,
+                                              management_transport_handle_frame, NULL) != MANAGEMENT_FRAME_OK)
             {
                 management_state = MANAGEMENT_STATE_FAULT;
+            }
+            if (management_state == MANAGEMENT_STATE_SENDING)
+            {
+                // Drop trailing partial requests received while the first transaction is pending.
+                management_frame_parser_reset(&management_parser);
             }
 
             rx_buf_len = 0;
@@ -560,12 +586,19 @@ void management_transport_session_close_from_isr(void)
 
 void management_transport_receive_from_isr(const uint8_t *data, uint32_t length)
 {
+    session_rx_in_progress = false;
+    if (!session_is_open || length > sizeof(session_rx_buf) || (data == NULL && length != 0U) ||
+        (last_session_id == session_id &&
+         (management_state == MANAGEMENT_STATE_SENDING || management_state == MANAGEMENT_STATE_FAULT)))
+    {
+        management_transport_notify_task_from_isr();
+        return;
+    }
     if (length != 0U)
     {
         memcpy(session_rx_buf, data, length);
     }
     session_rx_len = (uint8_t)length;
-    session_rx_in_progress = false;
     session_rx_completed = true;
     management_transport_notify_task_from_isr();
 }
