@@ -474,6 +474,64 @@ static void test_semantic_comparison_and_encoding_ignore_inactive_storage(void)
     TEST_ASSERT_EQUAL_MEMORY(configuration_test_default_payload, payload, 48);
 }
 
+static void test_credential_spare_and_struct_padding_do_not_change_encoding(void)
+{
+    uint8_t expected[8475];
+    for (unsigned int field = 0U; field < 3U; field++)
+    {
+        set_auth_length(field, 1U);
+    }
+    assert_valid_round_trip();
+    uint32_t expected_length = payload_length;
+    memcpy(expected, payload, expected_length);
+    for (unsigned int field = 0U; field < 3U; field++)
+    {
+        uint16_t *length;
+        uint8_t *bytes = auth_bytes(&model, field, &length);
+        memset(bytes + *length + 1U, 0xA5, 256U - *length);
+    }
+    /* Change only padding after the last public field, if the host ABI has any. */
+    uint8_t *representation = (uint8_t *)&model.mqtt.client_id.explicit_value;
+    size_t fields_end = offsetof(configuration_client_id_value_t, bytes) +
+                        sizeof(model.mqtt.client_id.explicit_value.bytes);
+    for (size_t index = fields_end; index < sizeof(configuration_client_id_value_t); index++)
+    {
+        representation[index] = 0x5A;
+    }
+    TEST_ASSERT_EQUAL_INT(CONFIGURATION_VALIDATION_OK, configuration_validate(&model));
+    TEST_ASSERT_TRUE(configuration_equals(&model, &decoded));
+    TEST_ASSERT_EQUAL_INT(CONFIGURATION_BINARY_CODEC_OK,
+                          configuration_binary_encode(&model, payload, sizeof(payload), &payload_length));
+    TEST_ASSERT_EQUAL_UINT32(expected_length, payload_length);
+    TEST_ASSERT_EQUAL_MEMORY(expected, payload, expected_length);
+    memset(&decoded, 0xA5, sizeof(decoded));
+    TEST_ASSERT_EQUAL_INT(CONFIGURATION_BINARY_CODEC_OK,
+                          configuration_binary_decode(payload, payload_length, &decoded));
+    assert_all_text_tails(&decoded);
+}
+
+static void test_derived_id_disabled_messages_and_unused_points_are_cleared(void)
+{
+    model.mqtt.client_id.mode = CONFIGURATION_CLIENT_ID_MODE_DERIVED;
+    memset(&model.mqtt.client_id.explicit_value, 0xA5, sizeof(model.mqtt.client_id.explicit_value));
+    model.mqtt.online_message.mode = CONFIGURATION_MQTT_MESSAGE_MODE_DISABLED;
+    model.mqtt.will_message.mode = CONFIGURATION_MQTT_MESSAGE_MODE_DISABLED;
+    model.mqtt.online_message.topic.length = UINT16_MAX;
+    model.mqtt.will_message.payload.length = UINT16_MAX;
+    model.collection.point_count = 1U;
+    memset(&model.collection.points[1], 0xA5, 15U * sizeof(configuration_collection_point_t));
+    assert_valid_round_trip();
+    TEST_ASSERT_EQUAL_UINT16(0, decoded.mqtt.client_id.explicit_value.length);
+    TEST_ASSERT_EQUAL_UINT16(0, decoded.mqtt.online_message.topic.length);
+    TEST_ASSERT_EQUAL_UINT16(0, decoded.mqtt.will_message.payload.length);
+    for (uint8_t index = 1U; index < 16U; index++)
+    {
+        TEST_ASSERT_EQUAL_UINT8(0, decoded.collection.points[index].slave_address);
+        TEST_ASSERT_EQUAL_UINT32(0, decoded.collection.points[index].poll_interval_ms);
+        TEST_ASSERT_EQUAL_UINT16(0, decoded.collection.points[index].topic.length);
+    }
+}
+
 static void test_corrupt_ca_and_excessive_bus_load_rejected(void)
 {
     /* Change one Base64 byte in the RSA signature; PEM remains syntactically readable. */
@@ -533,6 +591,8 @@ int main(void)
     RUN_TEST(test_wire_hostname_254_and_invalid_branch_rejected);
     RUN_TEST(test_semantic_comparison_ignores_spare_bytes_and_point_order);
     RUN_TEST(test_semantic_comparison_and_encoding_ignore_inactive_storage);
+    RUN_TEST(test_credential_spare_and_struct_padding_do_not_change_encoding);
+    RUN_TEST(test_derived_id_disabled_messages_and_unused_points_are_cleared);
     RUN_TEST(test_corrupt_ca_and_excessive_bus_load_rejected);
     RUN_TEST(test_real_certificate_allocation_failure_maps_to_resource_unavailable);
     return UNITY_END();
