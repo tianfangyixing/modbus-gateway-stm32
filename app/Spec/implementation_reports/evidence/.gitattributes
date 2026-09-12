@@ -1,0 +1,5 @@
+native_ctest.txt binary
+sanitizer_ctest.txt binary
+management_*.txt binary
+*.json text eol=lf
+integrated_code_files.txt text eol=lf

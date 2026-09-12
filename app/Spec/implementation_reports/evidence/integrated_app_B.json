@@ -1,0 +1,114 @@
+{
+  "total_rom": 253564,
+  "target": "app_B",
+  "files": [
+    {
+      "sha256": "c6458f9f896ce66d408f735486d59e5d4f74ad61bf7133f80876a4dcb0eb969b",
+      "length": 4138152,
+      "name": "app_B.axf"
+    },
+    {
+      "sha256": "98d0303d0394d9cc26ac6adbc8c8fc471b19598e0ea00088d76d7c317da55322",
+      "length": 253564,
+      "name": "app_B.bin"
+    },
+    {
+      "sha256": "10ec524de4c48dfd918da145aa06a7e34dceb5e447f61071bda4401489fc844a",
+      "length": 9334,
+      "name": "app_B.build_log.htm"
+    },
+    {
+      "sha256": "cbd774f080eb9b762c8a67c3214d6cf2b3d8a0143fa961c3c5b80288c0c1592c",
+      "length": 713254,
+      "name": "app_B.hex"
+    },
+    {
+      "sha256": "6239f6f9bf049dcd7cc39735442113ff46976c6c728d2e255b9f41a4be2a8356",
+      "length": 1411252,
+      "name": "app_B.htm"
+    },
+    {
+      "sha256": "959c1cf97f6377a40b5735f12957f4cb629117aa53a639c7a0ed0953e486fc8a",
+      "length": 1603896,
+      "name": "app_B.map"
+    },
+    {
+      "sha256": "dc98f10e137da4363f7ec6b507bc7baeda818b18883b6ccf3260ed1b765d1ac1",
+      "length": 7512,
+      "name": "keil-build.log"
+    }
+  ],
+  "phase": "integrated",
+  "source_revision": "d41ad115d72e5f837effbe441001a074acd5d36f",
+  "keil_exit_code": 1,
+  "buffers": {
+    "tx_buf": {
+      "length": 8494,
+      "object_section": "management_transport.o(.bss)",
+      "address": "0x200185ec"
+    },
+    "management_received_frame": {
+      "length": 8494,
+      "object_section": "management_transport.o(.ccmdata)",
+      "address": "0x1000b6c0"
+    },
+    "workspace": {
+      "length": 8495,
+      "object_section": "configuration_service.o(.bss)",
+      "address": "0x200164bc"
+    },
+    "active_configuration": {
+      "length": 8620,
+      "object_section": "configuration_service.o(.ccmdata)",
+      "address": "0x100072e8"
+    },
+    "temporary_configuration": {
+      "length": 8620,
+      "object_section": "configuration_service.o(.ccmdata)",
+      "address": "0x10009494"
+    },
+    "ram_heap": {
+      "length": 40979,
+      "object_section": "mem.o(.bss)",
+      "address": "0x20003c90"
+    },
+    "ucHeap": {
+      "length": 15360,
+      "object_section": "heap_4.o(.bss)",
+      "address": "0x10001060"
+    }
+  },
+  "collected_utc": "2026-09-12T22:58:25.3117551Z",
+  "source_status_at_invocation": [
+    "?? app/Spec/configuration/configuration_v2_task_breakdown.md",
+    "?? app/Spec/configuration/configuration_v2_update_plan.md",
+    "?? app/Spec/implementation_reports/evidence/",
+    "?? app/Spec/management/management_v2_update_plan.md"
+  ],
+  "regions": {
+    "RW_IRAM1": {
+      "free": 160,
+      "capacity": 114688,
+      "address": "0x20000000",
+      "used": 114528
+    },
+    "ER_IROM1": {
+      "free": 139412,
+      "capacity": 392704,
+      "address": "0x08080200",
+      "used": 253292
+    },
+    "RW_IRAM2": {
+      "free": 164,
+      "capacity": 16384,
+      "address": "0x2001c000",
+      "used": 16220
+    },
+    "RW_CCMRAM": {
+      "free": 6064,
+      "capacity": 65536,
+      "address": "0x10000000",
+      "used": 59472
+    }
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "manager_root": "C:\\Users\\tianf\\.codex\\worktrees\\f16e\\modbus-gateway-manager",
+  "codec_file": "C:\\Users\\tianf\\.codex\\worktrees\\f16e\\modbus-gateway-manager\\src\\modbus_gateway_manager\\config\\codec.py",
+  "results": {
+    "default_v2.bin": {
+      "valid": true,
+      "issue_codes": []
+    },
+    "minimum_v2.bin": {
+      "valid": true,
+      "issue_codes": []
+    },
+    "credentials_1_v2.bin": {
+      "valid": true,
+      "issue_codes": []
+    },
+    "credentials_255_v2.bin": {
+      "valid": true,
+      "issue_codes": []
+    },
+    "credentials_256_v2.bin": {
+      "valid": true,
+      "issue_codes": []
+    },
+    "maximum_v2.bin": {
+      "valid": true,
+      "issue_codes": []
+    },
+    "invalid_explicit_value_257.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TEXT_LENGTH_OUT_OF_RANGE"
+      ]
+    },
+    "invalid_explicit_value_nul.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_CLIENT_ID_EXPLICIT_NUL",
+        "MQTT_CLIENT_ID_EXPLICIT_CHARACTER"
+      ]
+    },
+    "invalid_explicit_value_control.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_CLIENT_ID_EXPLICIT_CHARACTER"
+      ]
+    },
+    "invalid_explicit_value_non_ascii.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_CLIENT_ID_EXPLICIT_CHARACTER"
+      ]
+    },
+    "invalid_explicit_value_empty.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TEXT_LENGTH_OUT_OF_RANGE"
+      ]
+    },
+    "invalid_username_257.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TEXT_LENGTH_OUT_OF_RANGE"
+      ]
+    },
+    "invalid_username_nul.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_USERNAME_NUL",
+        "MQTT_USERNAME_CHARACTER"
+      ]
+    },
+    "invalid_username_control.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_USERNAME_CHARACTER"
+      ]
+    },
+    "invalid_username_non_ascii.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_USERNAME_CHARACTER"
+      ]
+    },
+    "invalid_username_empty.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TEXT_LENGTH_OUT_OF_RANGE"
+      ]
+    },
+    "invalid_password_257.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TEXT_LENGTH_OUT_OF_RANGE"
+      ]
+    },
+    "invalid_password_nul.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_PASSWORD_NUL",
+        "MQTT_PASSWORD_CHARACTER"
+      ]
+    },
+    "invalid_password_control.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_PASSWORD_CHARACTER"
+      ]
+    },
+    "invalid_password_non_ascii.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_PASSWORD_CHARACTER"
+      ]
+    },
+    "invalid_password_empty.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TEXT_LENGTH_OUT_OF_RANGE"
+      ]
+    },
+    "invalid_client_id_space.bin": {
+      "valid": false,
+      "issue_codes": [
+        "MQTT_CLIENT_ID_EXPLICIT_CHARACTER"
+      ]
+    },
+    "hostname_253_v2.bin": {
+      "valid": true,
+      "issue_codes": []
+    },
+    "invalid_hostname_254.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TEXT_LENGTH_OUT_OF_RANGE"
+      ]
+    },
+    "discrepancy_timeout_5000.bin": {
+      "valid": false,
+      "issue_codes": [
+        "COLLECTION_FIRST_BYTE_TIMEOUT_RANGE"
+      ]
+    },
+    "discrepancy_rtu_timeout_60000.bin": {
+      "valid": false,
+      "issue_codes": [
+        "RTU_FIRST_BYTE_TIMEOUT_RANGE"
+      ]
+    },
+    "unsupported_v1.bin": {
+      "valid": false,
+      "issue_codes": [
+        "UNSUPPORTED_SCHEMA"
+      ]
+    },
+    "unsupported_v3.bin": {
+      "valid": false,
+      "issue_codes": [
+        "UNSUPPORTED_SCHEMA"
+      ]
+    },
+    "invalid_truncated.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TRUNCATED_PAYLOAD"
+      ]
+    },
+    "invalid_trailing.bin": {
+      "valid": false,
+      "issue_codes": [
+        "TRAILING_BYTES"
+      ]
+    },
+    "invalid_configuration_8476.bin": {
+      "valid": false,
+      "issue_codes": [
+        "PAYLOAD_TOO_LONG"
+      ]
+    },
+    "get_status_request.bin": {
+      "frame_length": 17,
+      "payload_length": 0
+    },
+    "put_default_request.bin": {
+      "frame_length": 65,
+      "payload_length": 48
+    },
+    "get_default_response.bin": {
+      "frame_length": 67,
+      "payload_length": 50
+    },
+    "put_maximum_request.bin": {
+      "frame_length": 8492,
+      "payload_length": 8475
+    },
+    "get_maximum_response.bin": {
+      "frame_length": 8494,
+      "payload_length": 8477
+    },
+    "put_invalid_8476_request.bin": {
+      "frame_length": 8493,
+      "payload_length": 8476
+    },
+    "put_v1_request.bin": {
+      "frame_length": 65,
+      "payload_length": 48
+    },
+    "put_configuration_invalid_response.bin": {
+      "frame_length": 19,
+      "payload_length": 2
+    },
+    "get_not_ready_response.bin": {
+      "frame_length": 19,
+      "payload_length": 2
+    },
+    "parser_recovery": "oversized header, bad CRC, noise, concatenation passed"
+  }
+}

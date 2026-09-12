@@ -1,0 +1,8 @@
+{
+  "source": "C:\\Users\\tianf\\Desktop\\modbus-gateway\\modbus-gateway-manager",
+  "patch_sha256": "ed20e4d2b579398317689863c99f4673df416af2f3be00e2a040ad3440227b07",
+  "files_verified": 99,
+  "index_sha256_unchanged": "7989da02ef359739cc375190c22b984540d551ede76ddfe7ced03a26457830c8",
+  "preserved_baseline_count": 39,
+  "reverse_apply_check": "passed"
+}

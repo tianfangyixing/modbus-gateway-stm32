@@ -1,0 +1,420 @@
+UpdateCTestConfiguration  from :C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/DartConfiguration.tcl
+Parse Config file:C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/DartConfiguration.tcl
+Test project C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+      Start  1: configuration_codec
+
+1: Test command: C:\Users\tianf\.codex\worktrees\f756\modbus-gateway-stm32\artifacts\configuration_v2\host-tests\configuration_codec\configuration_codec_tests.exe
+1: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/configuration_codec
+1: Test timeout computed to be: 1500
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:574:test_constants_and_storage_capacity:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:575:test_default_independent_vector_and_zeroing:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:576:test_maximum_independent_vector_and_real_ca:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:577:test_shortest_complete_vector:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:578:test_each_credential_length_1_255_256:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:579:test_each_credential_rejects_0_257_and_uint16_max:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:580:test_each_credential_rejects_embedded_or_missing_nul:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:581:test_client_id_character_set_exhaustive:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:582:test_username_password_printable_ascii_exhaustive:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:583:test_all_hostnames_length_sentinel_and_label_rules:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:584:test_all_unknown_schemas_including_v1:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:585:test_every_truncation_of_maximum_payload:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:586:test_zero_oversize_and_trailing_byte:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:587:test_small_encoder_buffers_have_no_overwrite:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:588:test_null_arguments:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:589:test_wire_credential_257_rejected_without_truncation:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:590:test_wire_nul_and_fixed_value_errors_map_to_model_invalid:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:591:test_wire_hostname_254_and_invalid_branch_rejected:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:592:test_semantic_comparison_ignores_spare_bytes_and_point_order:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:593:test_semantic_comparison_and_encoding_ignore_inactive_storage:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:594:test_credential_spare_and_struct_padding_do_not_change_encoding:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:595:test_derived_id_disabled_messages_and_unused_points_are_cleared:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:596:test_corrupt_ca_and_excessive_bus_load_rejected:PASS
+1: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_codec/test_configuration_codec.c:597:test_real_certificate_allocation_failure_maps_to_resource_unavailable:PASS
+1: 
+1: -----------------------
+1: 24 Tests 0 Failures 0 Ignored 
+1: OK
+ 1/11 Test  #1: configuration_codec ..............   Passed    0.13 sec
+test 2
+      Start  2: configuration_service_tests
+
+2: Test command: C:\Users\tianf\.codex\worktrees\f756\modbus-gateway-stm32\artifacts\configuration_v2\host-tests\configuration_service\configuration_service_tests.exe
+2: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/configuration_service
+2: Test timeout computed to be: 1500
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:408:test_empty_flash_and_init_idempotence:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:409:test_maximum_write_restart_and_active_immutability:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:410:test_legacy_addresses_magic_and_schema_are_rejected:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:411:test_invalid_header_rejected_before_payload_read:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:412:test_header_and_payload_crc_corruption_recovers_old_slot:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:413:test_generation_selection_all_pairs:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:414:test_writes_rotate_and_wrap_generation:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:415:test_invalid_input_never_accesses_flash:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:416:test_io_failures_and_power_loss_at_every_commit_phase:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:417:test_power_loss_inside_body_pages_and_each_magic_byte:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:418:test_failed_write_can_retry_without_erasing_confirmed_slot:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:419:test_readback_mismatch_reports_error_and_can_still_commit:PASS
+2: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/configuration_service/test_configuration_service.c:420:test_startup_io_failure_is_not_default_fallback:PASS
+2: 
+2: -----------------------
+2: 13 Tests 0 Failures 0 Ignored 
+2: OK
+ 2/11 Test  #2: configuration_service_tests ......   Passed    0.10 sec
+test 3
+      Start  3: management_frame
+
+3: Test command: C:\Users\tianf\.codex\worktrees\f756\modbus-gateway-stm32\artifacts\configuration_v2\host-tests\management\management_frame_tests.exe
+3: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/management
+3: Test timeout computed to be: 1500
+3: Management production frame tests passed
+ 3/11 Test  #3: management_frame .................   Passed    0.02 sec
+test 4
+      Start  4: management_python
+
+4: Test command: "C:\Program Files\Python313\python.exe" "-B" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_tools.py"
+4: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/management
+4: Test timeout computed to be: 1500
+4: ......
+4: ----------------------------------------------------------------------
+4: Ran 6 tests in 1.151s
+4: 
+4: OK
+ 4/11 Test  #4: management_python ................   Passed    1.28 sec
+test 5
+      Start  5: management_transport
+
+5: Test command: C:\Users\tianf\.codex\worktrees\f756\modbus-gateway-stm32\artifacts\configuration_v2\host-tests\management\management_transport_tests.exe
+5: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/management
+5: Test timeout computed to be: 1500
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:326:status_fixed_vector_and_time:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:327:maximum_status_and_oversize_recovery:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:328:noise_crc_session_and_receive_bounds:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:329:single_transaction_drops_glued_and_pending_requests:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:330:reopened_session_accepts_packet_before_task_observes_open:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:331:restart_waits_for_completion_and_retries:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:332:restart_cancelled_by_session_close_or_delay_disconnect:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:333:upgrade_unknown_and_not_ready:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:334:invalid_configuration_length_and_v1:PASS
+5: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:335:maximum_put_stays_inactive_until_reboot_then_maximum_get:PASS
+5: 
+5: -----------------------
+5: 10 Tests 0 Failures 0 Ignored 
+5: OK
+ 5/11 Test  #5: management_transport .............   Passed    0.09 sec
+test 6
+      Start  6: mqtt_v2_maximum_connect
+
+6: Test command: C:\Users\tianf\.codex\worktrees\f756\modbus-gateway-stm32\artifacts\configuration_v2\host-tests\mqtt\mqtt_v2_path.exe "explicit" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/mqtt/connect.bin"
+6: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/mqtt
+6: Test timeout computed to be: 1500
+6: PASS explicit CONNECT=1047, client allocation=2384, DNS/TLS/SNTP hostnames=253
+ 6/11 Test  #6: mqtt_v2_maximum_connect ..........   Passed    0.07 sec
+test 7
+      Start  7: mqtt_v2_derived_client_id
+
+7: Test command: C:\Users\tianf\.codex\worktrees\f756\modbus-gateway-stm32\artifacts\configuration_v2\host-tests\mqtt\mqtt_v2_path.exe "derived" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/mqtt/derived.bin"
+7: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/mqtt
+7: Test timeout computed to be: 1500
+7: PASS derived CONNECT=814, client allocation=2384, DNS/TLS/SNTP hostnames=253
+ 7/11 Test  #7: mqtt_v2_derived_client_id ........   Passed    0.01 sec
+test 8
+      Start  8: mqtt_v2_hostname_tls
+
+8: Test command: C:\Users\tianf\.codex\worktrees\f756\modbus-gateway-stm32\artifacts\configuration_v2\host-tests\mqtt\mqtt_v2_tls.exe
+8: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/mqtt
+8: Test timeout computed to be: 1500
+8: PASS real TLS setup: hostname=253, required verification; TLS buffers=6189+2093 bytes
+ 8/11 Test  #8: mqtt_v2_hostname_tls .............   Passed    0.01 sec
+test 9
+      Start  9: mqtt_v2_wire_oracle
+
+9: Test command: "C:\Program Files\Python313\python.exe" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/mqtt/verify_connect.py" "--executable" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/mqtt/mqtt_v2_path.exe"
+9: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/mqtt
+9: Test timeout computed to be: 1500
+9: PASS explicit CONNECT=1047, client allocation=2384, DNS/TLS/SNTP hostnames=253
+9: PASS derived CONNECT=814, client allocation=2384, DNS/TLS/SNTP hostnames=253
+9: PASS independent explicit wire oracle: 1047 bytes, all five strings intact
+9: PASS independent derived wire oracle: 814 bytes, all five strings intact
+9: External broker replay not requested; transport-boundary tests only
+ 9/11 Test  #9: mqtt_v2_wire_oracle ..............   Passed    0.14 sec
+test 10
+      Start 10: mqtt_v2_capacity_guards
+
+10: Test command: "C:\Program Files\Python313\python.exe" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/mqtt/verify_capacity.py" "--compiler" "C:/msys64/ucrt64/bin/gcc.exe"
+10: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/mqtt
+10: Test timeout computed to be: 1500
+10: PASS production
+10: PASS old_512
+10: PASS small_1024
+10: PASS full_ring_1047
+10: PASS non_power_two
+10: PASS dns_without_nul
+10: PASS will_u8_overflow
+10/11 Test #10: mqtt_v2_capacity_guards ..........   Passed    0.60 sec
+test 11
+      Start 11: cross_endpoint_vectors
+
+11: Test command: "C:\Program Files\Python313\python.exe" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/cross_endpoint/verify_c.py" "--executable" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/cross_endpoint/cross_endpoint_vectors.exe" "--vectors-dir" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/app/Tests/cross_endpoint/vectors" "--output" "C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/cross_endpoint/c_results.json"
+11: Working Directory: C:/Users/tianf/.codex/worktrees/f756/modbus-gateway-stm32/artifacts/configuration_v2/host-tests/cross_endpoint
+11: Test timeout computed to be: 1500
+11: {
+11:   "default_v2.bin": {
+11:     "expectation": "default",
+11:     "exit_code": 0,
+11:     "stdout": "decode=0",
+11:     "stderr": ""
+11:   },
+11:   "minimum_v2.bin": {
+11:     "expectation": "valid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=0",
+11:     "stderr": ""
+11:   },
+11:   "credentials_1_v2.bin": {
+11:     "expectation": "valid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=0",
+11:     "stderr": ""
+11:   },
+11:   "credentials_255_v2.bin": {
+11:     "expectation": "valid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=0",
+11:     "stderr": ""
+11:   },
+11:   "credentials_256_v2.bin": {
+11:     "expectation": "valid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=0",
+11:     "stderr": ""
+11:   },
+11:   "maximum_v2.bin": {
+11:     "expectation": "valid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=0",
+11:     "stderr": ""
+11:   },
+11:   "invalid_explicit_value_257.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "invalid_explicit_value_nul.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_explicit_value_control.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_explicit_value_non_ascii.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_explicit_value_empty.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "invalid_username_257.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "invalid_username_nul.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_username_control.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_username_non_ascii.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_username_empty.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "invalid_password_257.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "invalid_password_nul.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_password_control.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_password_non_ascii.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "invalid_password_empty.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "invalid_client_id_space.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "hostname_253_v2.bin": {
+11:     "expectation": "valid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=0",
+11:     "stderr": ""
+11:   },
+11:   "invalid_hostname_254.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "discrepancy_timeout_5000.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "discrepancy_rtu_timeout_60000.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=5",
+11:     "stderr": ""
+11:   },
+11:   "unsupported_v1.bin": {
+11:     "expectation": "schema",
+11:     "exit_code": 0,
+11:     "stdout": "decode=2",
+11:     "stderr": ""
+11:   },
+11:   "unsupported_v3.bin": {
+11:     "expectation": "schema",
+11:     "exit_code": 0,
+11:     "stdout": "decode=2",
+11:     "stderr": ""
+11:   },
+11:   "invalid_truncated.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "invalid_trailing.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=4",
+11:     "stderr": ""
+11:   },
+11:   "invalid_configuration_8476.bin": {
+11:     "expectation": "invalid",
+11:     "exit_code": 0,
+11:     "stdout": "decode=3",
+11:     "stderr": ""
+11:   },
+11:   "get_status_request.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "put_default_request.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "get_default_response.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "put_maximum_request.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "get_maximum_response.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "put_invalid_8476_request.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "put_v1_request.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "put_configuration_invalid_response.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "get_not_ready_response.bin": {
+11:     "expectation": "frame",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   },
+11:   "oversized_8478_header.bin": {
+11:     "expectation": "oversized_header",
+11:     "exit_code": 0,
+11:     "stdout": "",
+11:     "stderr": ""
+11:   }
+11: }
+11: 
+11/11 Test #11: cross_endpoint_vectors ...........   Passed    0.65 sec
+
+100% tests passed, 0 tests failed out of 11
+
+Total Test time (real) =   3.11 sec
+

@@ -1,0 +1,24 @@
+{
+  "source": {
+    "file": "C:\\Users\\tianf\\.codex\\worktrees\\f16e\\modbus-gateway-manager\\docs\\configuration_v2_vectors.json",
+    "vector": "maximum_v2",
+    "sha256": "da645807cef3620190782982ccfb6610f58549bf05eb708464df31a09ad463f1"
+  },
+  "results": {
+    "original": {
+      "exit_code": 0,
+      "stdout": "decode=5",
+      "stderr": ""
+    },
+    "timeouts_only": {
+      "exit_code": 0,
+      "stdout": "decode=5",
+      "stderr": ""
+    },
+    "timeouts_and_rsa": {
+      "exit_code": 0,
+      "stdout": "decode=0",
+      "stderr": ""
+    }
+  }
+}

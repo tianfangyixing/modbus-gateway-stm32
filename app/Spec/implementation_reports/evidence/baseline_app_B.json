@@ -1,0 +1,115 @@
+{
+  "source_status_at_invocation": [
+    "?? app/Spec/configuration/configuration_v2_task_breakdown.md",
+    "?? app/Spec/configuration/configuration_v2_update_plan.md",
+    "?? app/Spec/implementation_reports/",
+    "?? app/Spec/management/management_v2_update_plan.md",
+    "?? app/Tools/"
+  ],
+  "regions": {
+    "RW_IRAM2": {
+      "address": "0x2001c000",
+      "capacity": 16384,
+      "free": 632,
+      "used": 15752
+    },
+    "RW_IRAM1": {
+      "address": "0x20000000",
+      "capacity": 114688,
+      "free": 644,
+      "used": 114044
+    },
+    "ER_IROM1": {
+      "address": "0x08080200",
+      "capacity": 392704,
+      "free": 139548,
+      "used": 253156
+    },
+    "RW_CCMRAM": {
+      "address": "0x10000000",
+      "capacity": 65536,
+      "free": 7664,
+      "used": 57872
+    }
+  },
+  "source_revision": "aea4079a87e35c345bb0ddfd287a18fc85f5d872",
+  "phase": "baseline",
+  "collected_utc": "2026-09-12T22:36:24.2842621Z",
+  "target": "app_B",
+  "keil_exit_code": 1,
+  "buffers": {
+    "ram_heap": {
+      "address": "0x20004254",
+      "object_section": "mem.o(.bss)",
+      "length": 40979
+    },
+    "active_configuration": {
+      "address": "0x100072e8",
+      "object_section": "configuration_service.o(.ccmdata)",
+      "length": 7960
+    },
+    "temporary_configuration": {
+      "address": "0x10009200",
+      "object_section": "configuration_service.o(.ccmdata)",
+      "length": 7960
+    },
+    "tx_buf": {
+      "address": "0x20018d34",
+      "object_section": "management_transport.o(.bss)",
+      "length": 7845
+    },
+    "management_received_frame": {
+      "address": "0x1000b198",
+      "object_section": "management_transport.o(.ccmdata)",
+      "length": 8209
+    },
+    "ucHeap": {
+      "address": "0x10001060",
+      "object_section": "heap_4.o(.bss)",
+      "length": 15360
+    },
+    "workspace": {
+      "address": "0x20016d34",
+      "object_section": "configuration_service.o(.bss)",
+      "length": 8192
+    }
+  },
+  "files": [
+    {
+      "sha256": "5473a6728fd8c3874b3d2f61aeebb948c4d2a9a539fe62c4fd03dcd21db18aa6",
+      "name": "app_B.axf",
+      "length": 4136948
+    },
+    {
+      "sha256": "437ba8ff07f4c9cd04b23bc1e9c4dba84766ef61d029a6b5c954397092fc6da9",
+      "name": "app_B.bin",
+      "length": 253424
+    },
+    {
+      "sha256": "bcbe98524a5575739598865213030bd41e3af3e810b5d56659af0efc4997aade",
+      "name": "app_B.build_log.htm",
+      "length": 9334
+    },
+    {
+      "sha256": "e5c62225ddca01d347c4d1c748dfccfe8d0d792d4e43ee0d26d6bdf45d4d077d",
+      "name": "app_B.hex",
+      "length": 712857
+    },
+    {
+      "sha256": "2c6ab91bd69e7e81d10ed241cb8acc2c23c5c9df4694fd3e4a7cbde18d709b07",
+      "name": "app_B.htm",
+      "length": 1410833
+    },
+    {
+      "sha256": "590cf2e4c4ff54254e48188c3ec4968d0d09d9cf9d6d041aec115c1e7ad7b329",
+      "name": "app_B.map",
+      "length": 1603342
+    },
+    {
+      "sha256": "c44840ac44f8551e8233b21a49618a8a940bd59e462678f93a4762feffc10cb4",
+      "name": "keil-build.log",
+      "length": 7512
+    }
+  ],
+  "total_rom": 253424
+}

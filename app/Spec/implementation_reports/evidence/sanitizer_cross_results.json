@@ -1,0 +1,248 @@
+{
+  "default_v2.bin": {
+    "expectation": "default",
+    "exit_code": 0,
+    "stdout": "decode=0",
+    "stderr": ""
+  },
+  "minimum_v2.bin": {
+    "expectation": "valid",
+    "exit_code": 0,
+    "stdout": "decode=0",
+    "stderr": ""
+  },
+  "credentials_1_v2.bin": {
+    "expectation": "valid",
+    "exit_code": 0,
+    "stdout": "decode=0",
+    "stderr": ""
+  },
+  "credentials_255_v2.bin": {
+    "expectation": "valid",
+    "exit_code": 0,
+    "stdout": "decode=0",
+    "stderr": ""
+  },
+  "credentials_256_v2.bin": {
+    "expectation": "valid",
+    "exit_code": 0,
+    "stdout": "decode=0",
+    "stderr": ""
+  },
+  "maximum_v2.bin": {
+    "expectation": "valid",
+    "exit_code": 0,
+    "stdout": "decode=0",
+    "stderr": ""
+  },
+  "invalid_explicit_value_257.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "invalid_explicit_value_nul.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_explicit_value_control.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_explicit_value_non_ascii.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_explicit_value_empty.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "invalid_username_257.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "invalid_username_nul.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_username_control.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_username_non_ascii.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_username_empty.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "invalid_password_257.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "invalid_password_nul.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_password_control.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_password_non_ascii.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "invalid_password_empty.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "invalid_client_id_space.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "hostname_253_v2.bin": {
+    "expectation": "valid",
+    "exit_code": 0,
+    "stdout": "decode=0",
+    "stderr": ""
+  },
+  "invalid_hostname_254.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "discrepancy_timeout_5000.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "discrepancy_rtu_timeout_60000.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=5",
+    "stderr": ""
+  },
+  "unsupported_v1.bin": {
+    "expectation": "schema",
+    "exit_code": 0,
+    "stdout": "decode=2",
+    "stderr": ""
+  },
+  "unsupported_v3.bin": {
+    "expectation": "schema",
+    "exit_code": 0,
+    "stdout": "decode=2",
+    "stderr": ""
+  },
+  "invalid_truncated.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "invalid_trailing.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=4",
+    "stderr": ""
+  },
+  "invalid_configuration_8476.bin": {
+    "expectation": "invalid",
+    "exit_code": 0,
+    "stdout": "decode=3",
+    "stderr": ""
+  },
+  "get_status_request.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "put_default_request.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "get_default_response.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "put_maximum_request.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "get_maximum_response.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "put_invalid_8476_request.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "put_v1_request.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "put_configuration_invalid_response.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "get_not_ready_response.bin": {
+    "expectation": "frame",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "oversized_8478_header.bin": {
+    "expectation": "oversized_header",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+}

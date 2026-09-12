@@ -1,0 +1,27 @@
+Test project C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/build-gcc
+    Start 3: management_transport
+1/1 Test #3: management_transport .............***Failed    0.08 sec
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:318:status_fixed_vector_and_time:PASS
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:319:maximum_status_and_oversize_recovery:PASS
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:320:noise_crc_session_and_receive_bounds:PASS
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:66:single_transaction_drops_glued_and_pending_requests:FAIL: Expected 34 Was 19
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:322:reopened_session_accepts_packet_before_task_observes_open:PASS
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:323:restart_waits_for_completion_and_retries:PASS
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:324:restart_cancelled_by_session_close_or_delay_disconnect:PASS
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:325:upgrade_unknown_and_not_ready:PASS
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:326:invalid_configuration_length_and_v1:PASS
+C:/Users/tianf/.codex/worktrees/f523/modbus-gateway-stm32/app/Tests/management/test_management_transport.c:327:maximum_put_stays_inactive_until_reboot_then_maximum_get:PASS
+
+-----------------------
+10 Tests 1 Failures 0 Ignored 
+FAIL
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.09 sec
+
+The following tests FAILED:
+	  3 - management_transport (Failed)
+Errors while running CTest
+

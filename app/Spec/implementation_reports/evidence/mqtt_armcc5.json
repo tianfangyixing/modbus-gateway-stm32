@@ -1,0 +1,62 @@
+{
+  "extra_arguments_per_run": "-DMQTT_MEMORY_PROBE_RING=512 or 2048, source file, -o output assembly",
+  "hardware_measured": false,
+  "enum_note": "Both uvprojx targets use EnumInt=0; the final probe keeps ARMCC default enum representation (no --enum_is_int).",
+  "arguments": [
+    "--cpu",
+    "Cortex-M4.fp.sp",
+    "--c99",
+    "--littleend",
+    "-S",
+    "-O0",
+    "-DMBEDTLS_CONFIG_FILE=<mbedtls_config.h>",
+    "-Iapp/Tests/mqtt/include",
+    "-Iapp/LWIP/Target",
+    "-Iapp/SNTP/include",
+    "-Iapp/MQTT/include",
+    "-Iapp/Configuration/include",
+    "-Iapp/MBEDTLS/App",
+    "-Iapp/Middlewares/Third_Party/LwIP/src/include",
+    "-Iapp/Middlewares/Third_Party/mbedTLS/include"
+  ],
+  "project_enum_int": 0,
+  "results": {
+    "ring_2048": {
+      "pointer_size": 4,
+      "mqtt_client_size": 2288,
+      "ring_size": 2048,
+      "lwip_heap": 40960,
+      "tls_out_buffer": 2093,
+      "tls_in_buffer": 6189,
+      "ssl_session": 104,
+      "altcp_tls_state": 216,
+      "altcp_tls_config": 704,
+      "ssl_config": 96,
+      "x509_crt": 308,
+      "ssl_context": 188,
+      "dns_max_name": 256,
+      "ssl_transform": 192,
+      "ssl_handshake": 816
+    },
+    "ring_512": {
+      "pointer_size": 4,
+      "mqtt_client_size": 752,
+      "ring_size": 512,
+      "lwip_heap": 40960,
+      "tls_out_buffer": 2093,
+      "tls_in_buffer": 6189,
+      "ssl_session": 104,
+      "altcp_tls_state": 216,
+      "altcp_tls_config": 704,
+      "ssl_config": 96,
+      "x509_crt": 308,
+      "ssl_context": 188,
+      "dns_max_name": 256,
+      "ssl_transform": 192,
+      "ssl_handshake": 816
+    }
+  },
+  "source": "app/Tests/mqtt/memory_probe.c",
+  "compiler": "ARM Compiler 5.06u7 build 960",
+  "source_revision": "d41ad115d72e5f837effbe441001a074acd5d36f"
+}
