@@ -1,0 +1,159 @@
+T71AC 000:310.953   SEGGER J-Link V9.70 Log File
+T71AC 000:311.061   DLL Compiled: Aug 19 2026 12:06:04
+T71AC 000:311.066   Logging started @ 2026-09-12 17:41
+T71AC 000:311.071   Process: C:\Program Files\Keil_v5\UV4\UV4.exe
+T71AC 000:311.080 - 311.075ms 
+T71AC 000:311.089 JLINK_SetWarnOutHandler(...)
+T71AC 000:311.093 - 0.005ms 
+T71AC 000:311.099 JLINK_OpenEx(...)
+T71AC 000:319.491   Firmware: J-Link V9 compiled Dec 13 2022 11:14:50
+T71AC 000:321.088   Firmware: J-Link V9 compiled Dec 13 2022 11:14:50
+T71AC 000:321.228   Decompressing FW timestamp took 100 us
+T71AC 000:329.067   Hardware: V9.70
+T71AC 000:329.099   S/N: 69730351
+T71AC 000:329.107   OEM: SEGGER
+T71AC 000:329.117   Feature(s): RDI, GDB, FlashDL, FlashBP, JFlash
+T71AC 000:330.956   Bootloader: (FW returned invalid version)
+T71AC 000:332.983   TELNET listener socket opened on port 19021
+T71AC 000:333.160   WEBSRV WEBSRV_Init(): Starting webserver thread(s)
+T71AC 000:333.248   WEBSRV Failed to put socket into listener state (port 19080)
+T71AC 000:333.700   WEBSRV Webserver running on local port 19081
+T71AC 000:333.805   Looking for J-Link GUI Server exe at: C:\Program Files\Keil_v5\ARM\Segger\JLinkGUIServer.exe
+T71AC 000:333.888   Looking for J-Link GUI Server exe at: C:\Program Files\SEGGER\JLink_V970\JLinkGUIServer.exe
+T71AC 000:333.918   Forking J-Link GUI Server: C:\Program Files\SEGGER\JLink_V970\JLinkGUIServer.exe
+T71AC 000:368.689   J-Link GUI Server info: "J-Link GUI server V9.70 "
+T71AC 000:369.072 - 57.964ms returns "O.K."
+T71AC 000:369.129 JLINK_GetEmuCaps()
+T71AC 000:369.142 - 0.010ms returns 0xB9FF7BBF
+T71AC 000:369.150 JLINK_TIF_GetAvailable(...)
+T71AC 000:369.982 - 0.830ms 
+T71AC 000:370.042 JLINK_SetErrorOutHandler(...)
+T71AC 000:370.047 - 0.006ms 
+T71AC 000:370.071 JLINK_ExecCommand("ProjectFile = "C:\Users\tianf\Desktop\modbus-gateway\modbus-gateway-stm32\app\MDK-ARM\JLinkSettings.ini"", ...). 
+T71AC 000:399.039   Ref file found at: C:\Program Files\Keil_v5\ARM\Segger\JLinkDevices.ref
+T71AC 000:399.364   REF file references invalid XML file: C:\Program Files\SEGGER\JLink_V970\JLinkDevices.xml
+T71AC 000:399.484 - 29.413ms returns 0x00
+T71AC 000:399.518 JLINK_ExecCommand("Device = STM32F407ZGTx", ...). 
+T71AC 000:399.766   Flash bank @ 0x08000000: SFL: Parsing sectorization info from ELF file
+T71AC 000:399.775     FlashDevice.SectorInfo[0]: .SectorSize = 0x00004000, .SectorStartAddr = 0x08000000
+T71AC 000:399.782     FlashDevice.SectorInfo[1]: .SectorSize = 0x00010000, .SectorStartAddr = 0x08010000
+T71AC 000:399.788     FlashDevice.SectorInfo[2]: .SectorSize = 0x000D0000, .SectorStartAddr = 0x08020000
+T71AC 000:399.795   FlashBank @0x08000000: Sectorization info from SFL ELF file ignored because sectorization override from DLL / XML file is active.
+T71AC 000:400.184   Flash bank @ 0x08000000: SFL: Parsing sectorization info from ELF file
+T71AC 000:400.197     FlashDevice.SectorInfo[0]: .SectorSize = 0x00004000, .SectorStartAddr = 0x08000000
+T71AC 000:400.203     FlashDevice.SectorInfo[1]: .SectorSize = 0x00010000, .SectorStartAddr = 0x08010000
+T71AC 000:400.209     FlashDevice.SectorInfo[2]: .SectorSize = 0x000D0000, .SectorStartAddr = 0x08020000
+T71AC 000:400.217   FlashBank @0x1FFF7800: Sectorization info from SFL ELF file ignored because sectorization override from DLL / XML file is active.
+T71AC 000:400.248   Device "STM32F407ZG" selected.
+T71AC 000:400.497 - 0.978ms returns 0x00
+T71AC 000:400.513   ERROR: Unknown command
+T71AC 000:400.523 JLINK_GetHardwareVersion()
+T71AC 000:400.529 - 0.004ms returns 97000
+T71AC 000:400.534 JLINK_GetDLLVersion()
+T71AC 000:400.539 - 0.004ms returns 97000
+T71AC 000:400.545 JLINK_GetOEMString(...)
+T71AC 000:400.550 JLINK_GetFirmwareString(...)
+T71AC 000:400.554 - 0.004ms 
+T71AC 000:400.563 JLINK_GetDLLVersion()
+T71AC 000:400.567 - 0.004ms returns 97000
+T71AC 000:400.572 JLINK_GetCompileDateTime()
+T71AC 000:400.576 - 0.004ms 
+T71AC 000:400.582 JLINK_GetFirmwareString(...)
+T71AC 000:400.586 - 0.004ms 
+T71AC 000:400.591 JLINK_GetHardwareVersion()
+T71AC 000:400.595 - 0.004ms returns 97000
+T71AC 000:400.629 JLINK_GetSN()
+T71AC 000:400.634 - 0.004ms returns 69730351
+T71AC 000:400.639 JLINK_GetOEMString(...)
+T71AC 000:400.646 JLINK_TIF_Select(JLINKARM_TIF_SWD)
+T71AC 000:403.485 - 2.839ms returns 0x00
+T71AC 000:403.529 JLINK_HasError()
+T71AC 000:403.554 JLINK_SetSpeed(5000)
+T71AC 000:404.319 - 0.766ms 
+T71AC 000:404.765 JLINK_HasError()
+T71AC 000:404.780 JLINK_SetResetType(JLINKARM_RESET_TYPE_NORMAL)
+T71AC 000:404.786 - 0.006ms returns JLINKARM_RESET_TYPE_NORMAL
+T71AC 000:404.794 JLINK_Reset()
+T71AC 000:409.559   InitTarget() start
+T71AC 000:409.575    J-Link Script File: Executing InitTarget()
+T71AC 000:410.172   SWD selected. Executing JTAG -> SWD switching sequence.
+T71AC 000:413.281   DAP initialized successfully.
+T71AC 000:421.109   InitTarget() end - Took 11.5ms
+T71AC 000:422.079   Found SW-DP with ID 0x2BA01477
+T71AC 000:424.545   Old FW that does not support reading DPIDR via DAP jobs
+T71AC 000:425.459   DPv0 detected
+T71AC 000:425.487   CoreSight SoC-400 or earlier
+T71AC 000:425.506   Scanning AP map to find all available APs
+T71AC 000:426.431   AP[1]: Stopped AP scan as end of AP map has been reached
+T71AC 000:426.462   AP[0]: AHB-AP (IDR: 0x24770011, ADDR: 0x00000000)
+T71AC 000:426.469   Iterating through AP map to find AHB-AP to use
+T71AC 000:427.678   AP[0]: Core found
+T71AC 000:427.695   AP[0]: AHB-AP ROM base: 0xE00FF000
+T71AC 000:428.347   CPUID register: 0x410FC241. Implementer code: 0x41 (ARM)
+T71AC 000:428.359   Found Cortex-M4 r0p1, Little endian.
+T71AC 000:429.132   -- Max. mem block: 0x0000D328
+T71AC 000:430.422   CPU_ReadMem(4 bytes @ 0xE000EDF0)
+T71AC 000:430.934   CPU_ReadMem(4 bytes @ 0xE0002000)
+T71AC 000:431.444   FPUnit: 6 code (BP) slots and 2 literal slots
+T71AC 000:431.457   CPU_ReadMem(4 bytes @ 0xE000EDFC)
+T71AC 000:431.918   CPU_ReadMem(4 bytes @ 0xE0001000)
+T71AC 000:432.420   CPU_WriteMem(4 bytes @ 0xE0001000)
+T71AC 000:432.881   CPU_ReadMem(4 bytes @ 0xE000ED88)
+T71AC 000:433.417   CPU_WriteMem(4 bytes @ 0xE000ED88)
+T71AC 000:433.884   CPU_ReadMem(4 bytes @ 0xE000ED88)
+T71AC 000:434.429   CPU_WriteMem(4 bytes @ 0xE000ED88)
+T71AC 000:434.910   CoreSight components:
+T71AC 000:434.929   ROMTbl[0] @ E00FF000
+T71AC 000:434.938   CPU_ReadMem(64 bytes @ 0xE00FF000)
+T71AC 000:435.714   CPU_ReadMem(32 bytes @ 0xE000EFE0)
+T71AC 000:436.313   [0][0]: E000E000 CID B105E00D PID 000BB00C SCS-M7
+T71AC 000:436.341   CPU_ReadMem(32 bytes @ 0xE0001FE0)
+T71AC 000:436.969   [0][1]: E0001000 CID B105E00D PID 003BB002 DWT
+T71AC 000:436.982   CPU_ReadMem(32 bytes @ 0xE0002FE0)
+T71AC 000:437.606   [0][2]: E0002000 CID B105E00D PID 002BB003 FPB
+T71AC 000:437.628   CPU_ReadMem(32 bytes @ 0xE0000FE0)
+T71AC 000:438.295   [0][3]: E0000000 CID B105E00D PID 003BB001 ITM
+T71AC 000:438.310   CPU_ReadMem(32 bytes @ 0xE0040FE0)
+T71AC 000:438.941   [0][4]: E0040000 CID B105900D PID 000BB9A1 TPIU
+T71AC 000:438.953   CPU_ReadMem(32 bytes @ 0xE0041FE0)
+T71AC 000:439.515   [0][5]: E0041000 CID B105900D PID 000BB925 ETM
+T71AC 000:440.895   JLINK_GetResetTypeDesc
+T71AC 000:440.910   - 0.014ms 
+T71AC 000:440.918   Reset type: NORMAL (https://kb.segger.com/J-Link_Reset_Strategies)
+T71AC 000:440.927   CPU is running
+T71AC 000:440.936   CPU_WriteMem(4 bytes @ 0xE000EDF0)
+T71AC 000:441.425   CPU is running
+T71AC 000:441.443   CPU_WriteMem(4 bytes @ 0xE000EDFC)
+T71AC 000:441.957   Reset: Halt core after reset via DEMCR.VC_CORERESET.
+T71AC 000:442.709   Reset: Reset device via AIRCR.SYSRESETREQ.
+T71AC 000:442.720   CPU is running
+T71AC 000:442.728   CPU_WriteMem(4 bytes @ 0xE000ED0C)
+T71AC 000:497.066   CPU_ReadMem(4 bytes @ 0xE000EDF0)
+T71AC 000:497.544   CPU_ReadMem(4 bytes @ 0xE000EDF0)
+T71AC 000:500.394   CPU_WriteMem(4 bytes @ 0xE000EDFC)
+T71AC 000:506.700   CPU_ReadMem(4 bytes @ 0xE000EDF0)
+T71AC 000:509.662   CPU_WriteMem(4 bytes @ 0xE0002000)
+T71AC 000:510.124   CPU_ReadMem(4 bytes @ 0xE000EDFC)
+T71AC 000:510.564   CPU_ReadMem(4 bytes @ 0xE0001000)
+T71AC 000:511.157 - 106.362ms 
+T71AC 000:511.189 JLINK_GetId()
+T71AC 000:511.621 - 0.432ms returns 0x2BA01477
+T71AC 000:517.970 JLINK_GetFirmwareString(...)
+T71AC 000:517.995 - 0.025ms 
+T71AC 001:845.539 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T71AC 001:846.942 - 1.400ms returns 0x00
+T71AC 001:846.982 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T71AC 001:847.450 - 0.467ms returns 0x00
+T71AC 001:847.587 JLINK_SWO_Control(JLINKARM_SWO_CMD_GET_SPEED_INFO, ...)
+T71AC 001:848.107 - 0.519ms returns 0x00
+T71AC 015:668.274 JLINK_Close()
+T71AC 015:668.891   OnDisconnectTarget() start
+T71AC 015:668.914    J-Link Script File: Executing OnDisconnectTarget()
+T71AC 015:668.934   CPU_WriteMem(4 bytes @ 0xE0042004)
+T71AC 015:669.483   CPU_WriteMem(4 bytes @ 0xE0042008)
+T71AC 015:670.034   OnDisconnectTarget() end - Took 1.11ms
+T71AC 015:670.051   CPU_ReadMem(4 bytes @ 0xE0001000)
+T71AC 015:670.573   CPU_WriteMem(4 bytes @ 0xE0001004)
+T71AC 015:673.550 - 5.277ms
+T71AC 015:673.568   
+T71AC 015:673.573   Closed

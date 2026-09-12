@@ -1,0 +1,107 @@
+modbus-gateway-stm32\main.o: ../Core/Src/main.c
+modbus-gateway-stm32\main.o: ../Core/Inc/main.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
+modbus-gateway-stm32\main.o: ../Core/Inc/stm32f4xx_hal_conf.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
+modbus-gateway-stm32\main.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
+modbus-gateway-stm32\main.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h
+modbus-gateway-stm32\main.o: ../Drivers/CMSIS/Include/core_cm4.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+modbus-gateway-stm32\main.o: ../Drivers/CMSIS/Include/cmsis_version.h
+modbus-gateway-stm32\main.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
+modbus-gateway-stm32\main.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
+modbus-gateway-stm32\main.o: ../Drivers/CMSIS/Include/mpu_armv7.h
+modbus-gateway-stm32\main.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_exti.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_eth.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_iwdg.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rng.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rtc.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rtc_ex.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
+modbus-gateway-stm32\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+modbus-gateway-stm32\main.o: ../Core/Inc/FreeRTOSConfig.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/SystemView-4.12.0/Sample/FreeRTOSV10/SEGGER_SYSVIEW_FreeRTOS.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/SystemView-4.12.0/SYSVIEW/SEGGER_SYSVIEW.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/SystemView-4.12.0/SEGGER/SEGGER.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdarg.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/SystemView-4.12.0/Config/Global.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/SystemView-4.12.0/SYSVIEW/SEGGER_SYSVIEW_ConfDefaults.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/SystemView-4.12.0/Config/SEGGER_SYSVIEW_Conf.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/RTT/SEGGER_RTT_ConfDefaults.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/RTT/SEGGER_RTT_Conf.h
+modbus-gateway-stm32\main.o: ../Core/Inc/FreeRTOSConfig.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
+modbus-gateway-stm32\main.o: ../Core/Inc/dma.h
+modbus-gateway-stm32\main.o: ../Core/Inc/iwdg.h
+modbus-gateway-stm32\main.o: ../MBEDTLS/App/mbedtls.h
+modbus-gateway-stm32\main.o: ../MBEDTLS/App/mbedtls_config.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/check_config.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\limits.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/ssl.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/bignum.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/ecp.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/ssl_ciphersuites.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/pk.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/md.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/rsa.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/ecdsa.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/cipher.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/platform_util.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/platform_time.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\time.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/x509_crt.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/x509.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/asn1.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/x509_crl.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/ecdh.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/entropy.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/sha512.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/ctr_drbg.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/aes.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/mbedTLS/include/mbedtls/debug.h
+modbus-gateway-stm32\main.o: ../Core/Inc/rng.h
+modbus-gateway-stm32\main.o: ../Core/Inc/rtc.h
+modbus-gateway-stm32\main.o: ../Core/Inc/spi.h
+modbus-gateway-stm32\main.o: ../Core/Inc/tim.h
+modbus-gateway-stm32\main.o: ../Core/Inc/usart.h
+modbus-gateway-stm32\main.o: ../USB_DEVICE/App/usb_device.h
+modbus-gateway-stm32\main.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h
+modbus-gateway-stm32\main.o: ../USB_DEVICE/Target/usbd_conf.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdio.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
+modbus-gateway-stm32\main.o: ../Core/Inc/gpio.h
+modbus-gateway-stm32\main.o: ../Core/Inc/debug_log.h
+modbus-gateway-stm32\main.o: ../Middlewares/Third_Party/RTT/SEGGER_RTT.h
+modbus-gateway-stm32\main.o: ..\Boot\boot_control.h
+modbus-gateway-stm32\main.o: C:\Program Files\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdbool.h

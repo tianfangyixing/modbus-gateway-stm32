@@ -1,44 +1,47 @@
 # Local IDE settings
-/.vscode/
-/.idea/
-/.vs/
-/.agents/
+.vscode/
+.idea/
+.vs/
+.agents/
 
 # Keil MDK build directories
-/MDK-ARM/modbus-gateway-stm32/
-/MDK-ARM/Objects/
-/MDK-ARM/Listings/
+MDK-ARM/modbus-gateway-stm32/
+MDK-ARM/Objects/
+MDK-ARM/Listings/
+app/MDK-ARM/app_A/
+app/MDK-ARM/app_B/
 
 # Keil MDK generated files (scoped to MDK-ARM to avoid hiding release artifacts elsewhere)
-/MDK-ARM/**/*.o
-/MDK-ARM/**/*.obj
-/MDK-ARM/**/*.d
-/MDK-ARM/**/*.crf
-/MDK-ARM/**/*.axf
-/MDK-ARM/**/*.elf
-/MDK-ARM/**/*.hex
-/MDK-ARM/**/*.bin
-/MDK-ARM/**/*.map
-/MDK-ARM/**/*.lst
-/MDK-ARM/**/*.lnp
-/MDK-ARM/**/*.dep
-/MDK-ARM/**/*.iex
-/MDK-ARM/**/*.build_log.htm
+MDK-ARM/**/*.o
+MDK-ARM/**/*.obj
+MDK-ARM/**/*.d
+MDK-ARM/**/*.crf
+MDK-ARM/**/*.axf
+MDK-ARM/**/*.elf
+MDK-ARM/**/*.hex
+MDK-ARM/**/*.bin
+MDK-ARM/**/*.map
+MDK-ARM/**/*.lst
+MDK-ARM/**/*.lnp
+MDK-ARM/**/*.dep
+MDK-ARM/**/*.iex
+MDK-ARM/**/*.build_log.htm
+*.fu
 
 # Keil uVision per-user state
-/MDK-ARM/*.uvguix
-/MDK-ARM/*.uvguix.*
-/MDK-ARM/*.uvgui
-/MDK-ARM/*.uvgui.*
-/MDK-ARM/**/JLinkLog.txt
-/MDK-ARM/**/JLinkSettings.ini
+MDK-ARM/*.uvguix
+MDK-ARM/*.uvguix.*
+MDK-ARM/*.uvgui
+MDK-ARM/*.uvgui.*
+MDK-ARM/**/JLinkLog.txt
+MDK-ARM/**/JLinkSettings.ini
 
 # Python cache directories
 __pycache__/
 
 # Host-side test build output
-/Tests/build/
-/Tests/Testing/
+Tests/build/
+Tests/Testing/
 
 # Editor and temporary files
 *.log
@@ -60,4 +63,4 @@ Desktop.ini
 todo.txt
 .em_skill.json
 
-/artifacts
+artifacts/
