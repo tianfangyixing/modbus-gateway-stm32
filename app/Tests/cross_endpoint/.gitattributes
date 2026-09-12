@@ -1,0 +1,2 @@
+vectors/*.bin binary
+vectors/*.json text eol=lf

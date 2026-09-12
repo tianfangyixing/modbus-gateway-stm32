@@ -18,6 +18,7 @@ The pinned Unity dependency is the only fetched source; Middlewares remains read
 | configuration_service | NOR boundary simulation, three sectors, CRC, commit and recovery |
 | management | Real framing/Transport/Service, USB/RTOS adapters, Python tools |
 | mqtt | Real publisher/vendor MQTT, independent CONNECT oracle and real TLS policy setup |
+| cross_endpoint | 41 independent frozen vectors through the real production C model and framer |
 
 AddressSanitizer and UndefinedBehaviorSanitizer require a supported Linux compiler.
 On this Windows host, run the LF-preserved runner through WSL:

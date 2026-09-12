@@ -1,0 +1,347 @@
+{
+  "default_v2.bin": {
+    "length": 48,
+    "sha256": "9d94fe605fd6ef0d4e06462e2f6c0d73311d21e10e4841b9a5c708ef4756a621",
+    "kind": "configuration",
+    "valid": true
+  },
+  "minimum_v2.bin": {
+    "length": 21,
+    "sha256": "adf76b6e3590f1d386cb1dfde35cdde709a96b721e45f5836d7eaf9764bcf5ca",
+    "kind": "configuration",
+    "valid": true
+  },
+  "credentials_1_v2.bin": {
+    "length": 1197,
+    "sha256": "b67d6e458c20b14ad105baa90d4afbf3ed45630cd3069d881c4ee1e8cc72a1c6",
+    "kind": "configuration",
+    "valid": true,
+    "field_offsets": {
+      "default_until_mqtt": 0,
+      "mqtt.mode": 46,
+      "mqtt.broker_address": 47,
+      "mqtt.broker_port": 50,
+      "mqtt.client_id.mode": 52,
+      "mqtt.client_id.explicit_value": 53,
+      "mqtt.username": 56,
+      "mqtt.password": 59,
+      "mqtt.ca_certificate_pem": 62,
+      "mqtt.keep_alive_seconds": 1175,
+      "mqtt.online_message.mode": 1177,
+      "mqtt.will_message.mode": 1178,
+      "collection.point_count": 1179,
+      "collection.points[0]": 1180
+    }
+  },
+  "credentials_255_v2.bin": {
+    "length": 1959,
+    "sha256": "6aaa31e836644ca50e4033d803ac6f33685299430525f5e329ce85bcfa0cf0d5",
+    "kind": "configuration",
+    "valid": true,
+    "field_offsets": {
+      "default_until_mqtt": 0,
+      "mqtt.mode": 46,
+      "mqtt.broker_address": 47,
+      "mqtt.broker_port": 50,
+      "mqtt.client_id.mode": 52,
+      "mqtt.client_id.explicit_value": 53,
+      "mqtt.username": 310,
+      "mqtt.password": 567,
+      "mqtt.ca_certificate_pem": 824,
+      "mqtt.keep_alive_seconds": 1937,
+      "mqtt.online_message.mode": 1939,
+      "mqtt.will_message.mode": 1940,
+      "collection.point_count": 1941,
+      "collection.points[0]": 1942
+    }
+  },
+  "credentials_256_v2.bin": {
+    "length": 1962,
+    "sha256": "624cda9966933b04ac06c4619c029edae3998c0b171be67c598aa6266a8ac95c",
+    "kind": "configuration",
+    "valid": true,
+    "field_offsets": {
+      "default_until_mqtt": 0,
+      "mqtt.mode": 46,
+      "mqtt.broker_address": 47,
+      "mqtt.broker_port": 50,
+      "mqtt.client_id.mode": 52,
+      "mqtt.client_id.explicit_value": 53,
+      "mqtt.username": 311,
+      "mqtt.password": 569,
+      "mqtt.ca_certificate_pem": 827,
+      "mqtt.keep_alive_seconds": 1940,
+      "mqtt.online_message.mode": 1942,
+      "mqtt.will_message.mode": 1943,
+      "collection.point_count": 1944,
+      "collection.points[0]": 1945
+    }
+  },
+  "maximum_v2.bin": {
+    "length": 8475,
+    "sha256": "508de7195dd8464ad88ad1901dfddd7cd7a718ad6fa15135d0fda75563a9d670",
+    "kind": "configuration",
+    "valid": true,
+    "field_offsets": {
+      "schema_network": 0,
+      "rtu": 22,
+      "modbus_tcp": 29,
+      "sntp.servers[0]": 31,
+      "sntp.servers[1]": 287,
+      "mqtt.mode": 543,
+      "mqtt.broker_address": 544,
+      "mqtt.broker_port": 799,
+      "mqtt.client_id.mode": 801,
+      "mqtt.client_id.explicit_value": 802,
+      "mqtt.username": 1060,
+      "mqtt.password": 1318,
+      "mqtt.ca_certificate_pem": 1576,
+      "mqtt.keep_alive_seconds": 5674,
+      "mqtt.online_message": 5676,
+      "mqtt.will_message": 5939,
+      "collection.point_count": 6202,
+      "collection.points[0]": 6203,
+      "collection.points[1]": 6345,
+      "collection.points[2]": 6487,
+      "collection.points[3]": 6629,
+      "collection.points[4]": 6771,
+      "collection.points[5]": 6913,
+      "collection.points[6]": 7055,
+      "collection.points[7]": 7197,
+      "collection.points[8]": 7339,
+      "collection.points[9]": 7481,
+      "collection.points[10]": 7623,
+      "collection.points[11]": 7765,
+      "collection.points[12]": 7907,
+      "collection.points[13]": 8049,
+      "collection.points[14]": 8191,
+      "collection.points[15]": 8333
+    }
+  },
+  "invalid_explicit_value_257.bin": {
+    "length": 1963,
+    "sha256": "ff9266f3303d38a63fd65cd22e709844a04a57b428124824b0ebb350232caac0",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.client_id.explicit_value"
+  },
+  "invalid_explicit_value_nul.bin": {
+    "length": 1962,
+    "sha256": "a80596353ad08e53b77f73bfa4eaa04c09a956e8ac4883b00e9c742a6d90847b",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.client_id.explicit_value"
+  },
+  "invalid_explicit_value_control.bin": {
+    "length": 1962,
+    "sha256": "6133cbda0e34778309b84e0dd82f7f06f75a7d6443e6454447bfd58051b51dc4",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.client_id.explicit_value"
+  },
+  "invalid_explicit_value_non_ascii.bin": {
+    "length": 1962,
+    "sha256": "58850f7a2dcb945ab54f9fb7a3b4299ce9f19451ce26fa3800fe04c4b596218c",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.client_id.explicit_value"
+  },
+  "invalid_explicit_value_empty.bin": {
+    "length": 1706,
+    "sha256": "3dd9c32882fdc76c6a5fae3ee29b7ed5e80a93c79545f65981242cc612ab06af",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.client_id.explicit_value"
+  },
+  "invalid_username_257.bin": {
+    "length": 1963,
+    "sha256": "dbbb0f4dae9706b45bb8b363830cfbd10eb713ace47884954b2cdee0f8d3d8bf",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.username"
+  },
+  "invalid_username_nul.bin": {
+    "length": 1962,
+    "sha256": "9c5bcab30679ed49fc852f5ed5159c4b593b1c64e1223d8163957b9267b6fa55",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.username"
+  },
+  "invalid_username_control.bin": {
+    "length": 1962,
+    "sha256": "3cffe4d8f573f29a55ab533055cbaae246110ebdcb8517481550630d86ab2733",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.username"
+  },
+  "invalid_username_non_ascii.bin": {
+    "length": 1962,
+    "sha256": "bfe64f73444cef71a95a57773573dc4c3c7a41f9ae62b2d74c581f9582acafef",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.username"
+  },
+  "invalid_username_empty.bin": {
+    "length": 1706,
+    "sha256": "5ca9cf389eef2019c80135ff725a8ccdaf3885356625247bfc0a7f913a9d20be",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.username"
+  },
+  "invalid_password_257.bin": {
+    "length": 1963,
+    "sha256": "bc8a196a1a7cad66c9aad56af40e4ce54928f8d0a4a451610a5a8b00d277f92f",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.password"
+  },
+  "invalid_password_nul.bin": {
+    "length": 1962,
+    "sha256": "267c238e6eb87cbd60d7ec1a22d0bb87768fc8ff577e335457713d958213fe58",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.password"
+  },
+  "invalid_password_control.bin": {
+    "length": 1962,
+    "sha256": "1df90535aa70310cbf711b3fb5440821363acc207aac5cccd16d836a5dfb6694",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.password"
+  },
+  "invalid_password_non_ascii.bin": {
+    "length": 1962,
+    "sha256": "e34a98ea9a46b90f9e64ea8184a756b71783d5f699cccccd6f7a2d6278dc0f4b",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.password"
+  },
+  "invalid_password_empty.bin": {
+    "length": 1706,
+    "sha256": "8127a668d5323a9233966a511f84174c2f6f866b987824ac625ab08aa521aa09",
+    "kind": "configuration",
+    "valid": false,
+    "field": "mqtt.password"
+  },
+  "invalid_client_id_space.bin": {
+    "length": 1962,
+    "sha256": "536988ba598b1b8d9b6f661593e76af1499dd7a6692812392b3000c37140afd6",
+    "kind": "configuration",
+    "valid": false
+  },
+  "hostname_253_v2.bin": {
+    "length": 2214,
+    "sha256": "da6edf90ff774d2cfb440706c490c121814b471dd41dc63091b732f3c73cf7ac",
+    "kind": "configuration",
+    "valid": true
+  },
+  "invalid_hostname_254.bin": {
+    "length": 2215,
+    "sha256": "3574081a606cf97e718a5b755a1b527582071774f514e633ae1c7260d0e08a31",
+    "kind": "configuration",
+    "valid": false
+  },
+  "discrepancy_timeout_5000.bin": {
+    "length": 1962,
+    "sha256": "24853bc1810121dec0848a16686735c157c5de272375df5fb6ae5b596b7d7a5f",
+    "kind": "discrepancy",
+    "stm32_valid": false,
+    "manager_baseline_valid": true
+  },
+  "discrepancy_rtu_timeout_60000.bin": {
+    "length": 48,
+    "sha256": "155806f7efdf5c34855fd4f694ed69f6f05600379cbf4a8d7becdb1792109881",
+    "kind": "discrepancy",
+    "stm32_valid": false,
+    "manager_baseline_valid": true
+  },
+  "unsupported_v1.bin": {
+    "length": 48,
+    "sha256": "34d2e8155e9dae3c8f17a57428cc188f4788cd43d059fa1ffe88ba66d2366af8",
+    "kind": "configuration",
+    "valid": false
+  },
+  "unsupported_v3.bin": {
+    "length": 48,
+    "sha256": "a1e6b7eed89536e11285af15eb3608b1b12a02eef2f10b15c38fc3ef4c1b000b",
+    "kind": "configuration",
+    "valid": false
+  },
+  "invalid_truncated.bin": {
+    "length": 47,
+    "sha256": "d1690b9478b09d329b026c563795d2d51370d96406b71c2ac21bdee0c7dcd73b",
+    "kind": "configuration",
+    "valid": false
+  },
+  "invalid_trailing.bin": {
+    "length": 49,
+    "sha256": "a243fdf56bd3146b4129d1dd00fcc108e15ea2a9548df3061d0bcb9581a39cf6",
+    "kind": "configuration",
+    "valid": false
+  },
+  "invalid_configuration_8476.bin": {
+    "length": 8476,
+    "sha256": "aeb20d6a4295ad223a17230969258c8eb40a375b1461bb6d9983bc0278c7dc40",
+    "kind": "configuration",
+    "valid": false
+  },
+  "get_status_request.bin": {
+    "length": 17,
+    "sha256": "a23a23a804142b6855dbbf4fc08d77fee0b62a66b6e3efe456f219d595cb140a",
+    "kind": "frame",
+    "payload_length": 0
+  },
+  "put_default_request.bin": {
+    "length": 65,
+    "sha256": "6a16a9021c67dc417bcaea42f736fba9563b2fda91d957f61fff10fc2c061f6f",
+    "kind": "frame",
+    "payload_length": 48
+  },
+  "get_default_response.bin": {
+    "length": 67,
+    "sha256": "1157603cfc24685eb6667b648255787d1d594f120217b2026a4d3bdc4efcb72a",
+    "kind": "frame",
+    "payload_length": 50
+  },
+  "put_maximum_request.bin": {
+    "length": 8492,
+    "sha256": "8dd71f042c8357fdabaf333ce34ae253aa5884d36ce37453bd755bced1646417",
+    "kind": "frame",
+    "payload_length": 8475
+  },
+  "get_maximum_response.bin": {
+    "length": 8494,
+    "sha256": "ff33b4dd70669f5a964633e3726ad71e0adea5c4c9bfec773e5ca0ce72cf7d3c",
+    "kind": "frame",
+    "payload_length": 8477
+  },
+  "put_invalid_8476_request.bin": {
+    "length": 8493,
+    "sha256": "4a1b26b82a4fdf9ae55f9c0c4e1673eae7f1af0e534f9fde9764bd765f62cf66",
+    "kind": "frame",
+    "payload_length": 8476
+  },
+  "put_v1_request.bin": {
+    "length": 65,
+    "sha256": "4ac5e21e053a9c67051e699f42aa85389b75b929c358ca500246ee55d2a36f97",
+    "kind": "frame",
+    "payload_length": 48
+  },
+  "put_configuration_invalid_response.bin": {
+    "length": 19,
+    "sha256": "f69322e38346a4a10fda1c04fdd69f5c3c61dfdac057f41235c884453908ddeb",
+    "kind": "frame",
+    "payload_length": 2
+  },
+  "get_not_ready_response.bin": {
+    "length": 19,
+    "sha256": "13a713e780ca14d722e2e76d8491974d258ab88e97b2646efb5af27639d4e86b",
+    "kind": "frame",
+    "payload_length": 2
+  },
+  "oversized_8478_header.bin": {
+    "length": 13,
+    "sha256": "1b641cb71a18310416b382a738b6e33931a78d6d954b7bfc2cb19237d529c760",
+    "kind": "oversized_header"
+  }
+}
