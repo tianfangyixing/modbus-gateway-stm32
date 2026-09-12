@@ -1,0 +1,97 @@
+{
+  "source": "C:\\Users\\tianf\\Desktop\\modbus-gateway\\modbus-gateway-manager\\docs\\configuration_v2_vectors.json",
+  "source_sha256": "be6121b26c9a47cd5a26c5a9d7a61f674698da905177abec9a2cdfdcc8eb1fcc",
+  "results": {
+    "default_v2": {
+      "length": 48,
+      "sha256": "9d94fe605fd6ef0d4e06462e2f6c0d73311d21e10e4841b9a5c708ef4756a621",
+      "exit_code": 0,
+      "stdout": "decode=0",
+      "stderr": ""
+    },
+    "default_v1_rejected": {
+      "length": 48,
+      "sha256": "34d2e8155e9dae3c8f17a57428cc188f4788cd43d059fa1ffe88ba66d2366af8",
+      "exit_code": 0,
+      "stdout": "decode=2",
+      "stderr": ""
+    },
+    "maximum_v2": {
+      "length": 8475,
+      "sha256": "508de7195dd8464ad88ad1901dfddd7cd7a718ad6fa15135d0fda75563a9d670",
+      "exit_code": 0,
+      "stdout": "decode=0",
+      "stderr": ""
+    },
+    "get_status_request": {
+      "length": 17,
+      "sha256": "ef30d00e1ae68173bd9437260c691a2dc3dcbe20405e2a472ad50d98dec9bc7e",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "get_status_response": {
+      "length": 34,
+      "sha256": "6c7c6c437fde0f1a0455c36c24603e90199796d35df323f03ee2622a083e4295",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "get_default_response": {
+      "length": 67,
+      "sha256": "39d9b925365916bb0466d4b67d85ebc1d9d7032330d755699fa35a5b51a5ab39",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "put_maximum_request": {
+      "length": 8492,
+      "sha256": "3032a91821be777dbbafac2220ac94d59963fd66cea22e183c8116860f92db4e",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "put_ok_response": {
+      "length": 19,
+      "sha256": "2748b3be095cf017ea25fedf5bfa69975329d7548c5353fc72e4f962c1a49b77",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "get_before_restart_response": {
+      "length": 67,
+      "sha256": "a2ccf76ba1641fd4806dec58c67123e82eb62bb1f4d27873d6a615b294471b94",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "get_maximum_response": {
+      "length": 8494,
+      "sha256": "5ef4c5fd9ffe895968ad21a0db6abf5546a1bdf3391ab0f1e41f7ef9892c3540",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "request_upgrade": {
+      "length": 17,
+      "sha256": "72ae3931bd0084ec8acbeab9271620f79789f033763e42ce943923ff29659e9d",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "request_upgrade_ok": {
+      "length": 19,
+      "sha256": "9720dfb56372733e8fa34f631d1c02a720a57f7c20459018e6a7d933832c9fd7",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "restart_ok_legacy": {
+      "length": 19,
+      "sha256": "31d1602aa9abc0a1c7c0adbfd982825046a6bf9c394f151777e3fe386cf7ed91",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  }
+}

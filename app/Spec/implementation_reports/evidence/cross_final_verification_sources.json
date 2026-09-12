@@ -1,0 +1,64 @@
+{
+  "core": {
+    "root": "C:\\Users\\tianf\\.codex\\worktrees\\62d8\\modbus-gateway-stm32",
+    "observed_head": "e5be186e1288b121d21c60e4b4bd0124bde8dfc2",
+    "files": {
+      "app/Configuration/include/configuration.h": "7f9e35a66d44b15f01bff7ae2bbfa2d632762a23eabc3317ca1909c4cac5fe67",
+      "app/Configuration/include/configuration_binary_codec.h": "7d4258e863fbf1212b27daae9be5c33e82e609b38ff03616682bec8ca4b0b012",
+      "app/Configuration/src/configuration.c": "f4297cc83ba41df4aeb9c4ad96561c17b61680ca1cb696c21e332ccda748716d",
+      "app/Configuration/src/configuration_binary_codec.c": "96d447e0601139c05ed02b206ab4c71c02a3da406f019e63c581ceea5332e4a0",
+      "app/MBEDTLS/App/mbedtls_config.h": "30d48dc36b1b28236f85ad463fb7dd7d58a05bc6c1dee4c3913cff7eb0dd59a8"
+    },
+    "verified_production_commit": "c8af11762d357590cff8fe7bf3402cadc3321762"
+  },
+  "management": {
+    "root": "C:\\Users\\tianf\\.codex\\worktrees\\f523\\modbus-gateway-stm32",
+    "observed_head": "21b9a1cbac3c654e0a7148d603a8e9c9a724f05b",
+    "files": {
+      "app/Management/include/management_frame.h": "471ceb8f770b027dfc1b317dfe149c69a8b2ee1f4570d2a8afdd2c9ec96b8005",
+      "app/Management/src/management_frame.c": "dea65aab3320b4bca10288c28ea0f3842185bc613a54d4aea85a14e7b586ef3c"
+    },
+    "verified_production_commit": "b6a92b08b46c81777c1aa3ede69ffa577c3c519f"
+  },
+  "manager": {
+    "root": "C:\\Users\\tianf\\.codex\\worktrees\\f16e\\modbus-gateway-manager",
+    "observed_head": "94ba253af0e5f4feeb72e2be4581794bc652ac04",
+    "files": {
+      "src/modbus_gateway_manager/domain/configuration.py": "fab6989d07f0eff3df583d0ebef8f6ab8cc9927191c31ff84f567fb6796bd5d3",
+      "src/modbus_gateway_manager/config/codec.py": "416a1ed4bb59fc8c6c5aa658015ee27f635ac2c29eaf4a93416cf69094d424f6",
+      "src/modbus_gateway_manager/config/validation/network.py": "788577c10c3d43e11e70cb4c796c8791231ea915cd6ad67e0d2c18af56d6dd04",
+      "src/modbus_gateway_manager/config/validation/collection.py": "2694ed456ce71f2e6380f81fcfce0d2a515a222575caa93d06a3b132b6f037df",
+      "src/modbus_gateway_manager/config/validation/mqtt.py": "85c4d599580d209d3ac802d40011d71c644cf5a15b4b81a3226f7a9a24c2c5c7",
+      "src/modbus_gateway_manager/config/validation/sntp.py": "b46ce276ef7c695c67043a7870445cd768fc6a28dd619e3c5aa1fc5cdc348745",
+      "src/modbus_gateway_manager/protocol/frame.py": "8e3f19770e74a3662e5cdbbfa78ad7c2032ed7688aa74978543985340335cb7a",
+      "src/modbus_gateway_manager/protocol/stream_parser.py": "ff2396e1abc090a7d599e70a1e2d50d66bbfae738d1849d56a64b06b2fffe6dc",
+      "src/modbus_gateway_manager/protocol/messages.py": "22d4b8ed07099aebb2b26990846b5b9523681c071a577feab6c1ae16c37f0690"
+    },
+    "configuration_patch_sha256": "4c9ac5e09c789aa0985bd71c5e03ec2f09ee308c675c1a3b50b9bea5685f51e5",
+    "status": "repaired domain/config/protocol independently verified; final UI source reviewed; aggregate delivered"
+  },
+  "delivered_manager": {
+    "root": "C:\\Users\\tianf\\Desktop\\modbus-gateway\\modbus-gateway-manager",
+    "aggregate_patch_sha256": "ed20e4d2b579398317689863c99f4673df416af2f3be00e2a040ad3440227b07",
+    "delivery_metadata_file": "C:\\Users\\tianf\\Desktop\\modbus-gateway\\modbus-gateway-manager\\artifacts\\configuration-v2-tasks\\delivered.json",
+    "implementation_commit": null,
+    "result_ready": true,
+    "files": {
+      "src/modbus_gateway_manager/domain/configuration.py": "fab6989d07f0eff3df583d0ebef8f6ab8cc9927191c31ff84f567fb6796bd5d3",
+      "src/modbus_gateway_manager/config/codec.py": "416a1ed4bb59fc8c6c5aa658015ee27f635ac2c29eaf4a93416cf69094d424f6",
+      "src/modbus_gateway_manager/config/validation/network.py": "788577c10c3d43e11e70cb4c796c8791231ea915cd6ad67e0d2c18af56d6dd04",
+      "src/modbus_gateway_manager/config/validation/collection.py": "2694ed456ce71f2e6380f81fcfce0d2a515a222575caa93d06a3b132b6f037df",
+      "src/modbus_gateway_manager/config/validation/mqtt.py": "85c4d599580d209d3ac802d40011d71c644cf5a15b4b81a3226f7a9a24c2c5c7",
+      "src/modbus_gateway_manager/config/validation/sntp.py": "b46ce276ef7c695c67043a7870445cd768fc6a28dd619e3c5aa1fc5cdc348745",
+      "src/modbus_gateway_manager/protocol/frame.py": "8e3f19770e74a3662e5cdbbfa78ad7c2032ed7688aa74978543985340335cb7a",
+      "src/modbus_gateway_manager/protocol/stream_parser.py": "ff2396e1abc090a7d599e70a1e2d50d66bbfae738d1849d56a64b06b2fffe6dc",
+      "src/modbus_gateway_manager/protocol/messages.py": "22d4b8ed07099aebb2b26990846b5b9523681c071a577feab6c1ae16c37f0690",
+      "src/modbus_gateway_manager/ui/editor.py": "01aa452351053e665f9662090e4f21f93cc8b8a38015ca4b79bd56835b1bc9be",
+      "src/modbus_gateway_manager/ui/components.py": "f69bc5a3125249a8be43f75bd3d4f80cecbaf6973e4d74f5d7e667b73f3ff199",
+      "src/modbus_gateway_manager/ui/controls.py": "3fcdaa29142fb3378fed4dcbd8aae3aff12ee58599940077a66aedc8afb71d90",
+      "src/modbus_gateway_manager/services/write_workflow.py": "d426b7e91f35db4d5054074a26eadcadde4622338223442b0b44be505e60a114",
+      "src/modbus_gateway_manager/services/document_service.py": "31136e17e9a9fe6645c90bfa2762f9e605a4640af1672bd0d2d9b314339d1ed2",
+      "src/modbus_gateway_manager/services/device_service.py": "2c5ad3ee434fb54076ec2da61056ae93935f3bd2725913effbe4cdc63aa30751"
+    }
+  }
+}

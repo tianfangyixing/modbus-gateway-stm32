@@ -7,7 +7,7 @@
 分支：`codex/configuration-v2-integration`。
 基础提交：`aea4079a87e35c345bb0ddfd287a18fc85f5d872`。
 最后代码与测试集成 SHA：`2d69018d099ce432ecca26895d70e706b88e591a`。
-固件构建输入 SHA：`d41ad115d72e5f837effbe441001a074acd5d36f`；其后的提交只增加独立跨端测试。
+固件构建输入 SHA：`d41ad115d72e5f837effbe441001a074acd5d36f`；其后的提交只增加独立跨端测试和验收文档。
 已用 `git diff --exit-code d41ad115 HEAD --` 对全部固件源目录、配置和链接目录确认零差异。
 报告、原计划状态及证据随后独立封存；交付 HEAD 由最终任务消息提供，不在同一提交中伪造自引用 SHA。
 
@@ -32,7 +32,8 @@
 
 - `d41ad115d72e5f837effbe441001a074acd5d36f`：根 CMake 接入各 suite、可复现 Keil/主机/sanitizer 脚本、实际测试入口说明、AGENTS 中旧描述。
 - `2d69018d099ce432ecca26895d70e706b88e591a`：接入冻结的独立跨端向量及真实 C runner，增加向量长度/SHA 校验。
-- 独立交付提交：本报告、状态更新与固定验收证据。它不改变固件生产代码。
+- `e807e999574c93b4d0c0e1528be383655ad86d2b`：本报告、状态更新与固定验收证据。
+- 最后补充提交：归档独立协议任务对上位机实际交付目录的验证结果。两项均不改变固件生产代码。
 
 生产改动限于 `Configuration/include/*.h`、`Configuration/src/*.c`、
 `Management/include/management_frame.h`、`Management/src/management_transport.c`、Management 自有 Python 工具、
@@ -276,3 +277,14 @@ python -B app/Management/tools/management_configuration_validation.py --payload 
 PUT（ID`0x01020304`）为`3032a91821be777dbbafac2220ac94d59963fd66cea22e183c8116860f92db4e`，
 GET（ID`0x01020308`）为`5ef4c5fd9ffe895968ad21a0db6abf5546a1bdf3391ab0f1e41f7ef9892c3540`。
 13组发布向量已由独立协议任务通过真实C入口验证。上述交付和软件验收不替代本报告列出的板端验证。
+
+
+独立协议任务最终证据提交为`6b2c641d2d8173977c16b4a2207cdb442e410c0a`，
+补充对实际回填目录的[41固定向量核对](evidence/cross_delivered_manager_results.json)和
+[13发布向量真实C验证](evidence/cross_delivered_publication_c_results.json)，均通过。
+实际发布JSON原始SHA-256为`be6121b26c9a47cd5a26c5a9d7a61f674698da905177abec9a2cdfdcc8eb1fcc`，
+本固件任务已再次实读核对；[最终源码与补丁指纹](evidence/cross_final_verification_sources.json)和
+[上位机测试日志归属与摘要](evidence/cross_delivery_log_evidence.json)一并归档。
+[最终完整证据包](../../../artifacts/configuration_v2/cross_endpoint/evidence-6b2c641.zip)的实读SHA-256为
+`292c58beeb0cddaa6f4de2e2b1d16eb9d9aeb0dafb09168a57e40e790a75b9fd`。
+本任务核对包内41个二进制、LF manifest和原始C runner全部与此前冻结输入一致，未引入该审查树的局部生产改动。
