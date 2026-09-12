@@ -41,9 +41,9 @@ const configuration_t *configuration_service_active(void);
 
 /**
   * @brief 校验二进制配置载荷并原子提交到 External Flash，供后续系统启动时加载。
-  * @param payload 待持久化载荷的起始地址。不得为 NULL；缓冲区必须完整位于 DMA 可访问的 SRAM 中，
-  *                在函数返回前保持可读，并至少包含 payload_length 字节。
-  * @param payload_length 载荷长度，单位为字节，必须位于 1..CONFIGURATION_V1_MAX_PAYLOAD_LENGTH 闭区间内。
+  * @param payload 待持久化载荷的起始地址。不得为 NULL；缓冲区至少包含 payload_length 字节，
+  *                调用期间内容稳定且 CPU 可读，不得与内部 workspace 重叠；允许位于 CCM。
+  * @param payload_length 载荷长度，单位为字节，必须位于 1..CONFIGURATION_V2_MAX_PAYLOAD_LENGTH 闭区间内。
   * @pre 必须先成功调用 configuration_service_init()。
   * @pre 不得从 ISR 中调用。
   * @pre 调用方必须保证本次调用与本模块的其他调用以及所有其他 External Flash 访问严格串行。
@@ -53,7 +53,8 @@ const configuration_t *configuration_service_active(void);
   * @retval CONFIGURATION_SERVICE_RESOURCE_UNAVAILABLE 校验载荷所需的临时资源不足，未访问 External Flash。
   * @retval CONFIGURATION_SERVICE_IO_ERROR 访问 External Flash 失败，或持久化后的回读内容与载荷不一致。
   * @retval CONFIGURATION_SERVICE_INVALID_PAYLOAD 载荷的 schema、二进制结构或配置模型无效，未访问 External Flash。
-  * @note 只有 configuration_binary_decode() 校验成功的载荷才会被提交。
+  * @note 只接受 schema v2；只有 configuration_binary_decode() 校验成功的载荷才会被提交。
+  * @note 服务先通过 CPU 将载荷复制到普通 SRAM workspace，实际 Flash DMA 仅使用该 workspace。
   */
 configuration_service_result_t configuration_service_write(const uint8_t *payload, uint32_t payload_length);
 

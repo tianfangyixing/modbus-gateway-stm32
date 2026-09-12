@@ -12,15 +12,16 @@
 #include <stddef.h>
 #include <string.h>
 
-#define CONFIGURATION_SLOT_MAGIC UINT32_C(0x57753102)
+#define CONFIGURATION_SLOT_MAGIC UINT32_C(0x32474643)
 
 #define CONFIGURATION_FLASH_SIZE UINT32_C(0x01000000)
 #define CONFIGURATION_SECTOR_SIZE UINT32_C(4096)
-#define CONFIGURATION_SLOT_SIZE UINT32_C(8192)
+#define CONFIGURATION_SLOT_SIZE UINT32_C(12288)
 #define CONFIGURATION_SLOT_HEADER_SIZE UINT32_C(20)
-#define CONFIGURATION_SLOT_MAX_PAYLOAD_LENGTH (CONFIGURATION_SLOT_SIZE - CONFIGURATION_SLOT_HEADER_SIZE)
-#define CONFIGURATION_SLOT_A_ADDRESS UINT32_C(0x00FFC000)
-#define CONFIGURATION_SLOT_B_ADDRESS UINT32_C(0x00FFE000)
+#define CONFIGURATION_WORKSPACE_SIZE (CONFIGURATION_SLOT_HEADER_SIZE + CONFIGURATION_V2_MAX_PAYLOAD_LENGTH)
+#define CONFIGURATION_SLOT_SECTOR_COUNT (CONFIGURATION_SLOT_SIZE / CONFIGURATION_SECTOR_SIZE)
+#define CONFIGURATION_SLOT_A_ADDRESS UINT32_C(0x00FFA000)
+#define CONFIGURATION_SLOT_B_ADDRESS UINT32_C(0x00FFD000)
 
 #define CONFIGURATION_SLOT_A UINT8_C(0)
 #define CONFIGURATION_SLOT_B UINT8_C(1)
@@ -28,8 +29,16 @@
 #define CONFIGURATION_GENERATION_FIRST UINT32_C(0)
 #define CONFIGURATION_GENERATION_LAST UINT32_C(2)
 
-#if CONFIGURATION_V1_MAX_PAYLOAD_LENGTH > CONFIGURATION_SLOT_MAX_PAYLOAD_LENGTH
-#error "Schema v1 payload does not fit in a configuration slot"
+#if CONFIGURATION_WORKSPACE_SIZE > CONFIGURATION_SLOT_SIZE
+#error "Schema v2 record does not fit in a configuration slot"
+#endif
+
+#if CONFIGURATION_SLOT_SIZE % CONFIGURATION_SECTOR_SIZE != 0U
+#error "Configuration slots must contain whole sectors"
+#endif
+
+#if CONFIGURATION_WORKSPACE_SIZE != 8495U || CONFIGURATION_SLOT_SECTOR_COUNT != 3U
+#error "Configuration v2 storage dimensions do not match the contract"
 #endif
 
 #if CONFIGURATION_SLOT_A_ADDRESS % CONFIGURATION_SECTOR_SIZE != 0U || \
@@ -47,6 +56,11 @@
 #error "Configuration slots overlap"
 #endif
 
+#if CONFIGURATION_SLOT_A_ADDRESS + CONFIGURATION_SLOT_SIZE != CONFIGURATION_SLOT_B_ADDRESS || \
+    CONFIGURATION_SLOT_B_ADDRESS + CONFIGURATION_SLOT_SIZE != CONFIGURATION_FLASH_SIZE
+#error "Configuration v2 slots must reserve the final 24 KiB of external Flash"
+#endif
+
 typedef enum
 {
     CONFIGURATION_SERVICE_UNINITIALIZED = 0,
@@ -62,7 +76,8 @@ typedef struct
 
 static CCM_SRAM configuration_t active_configuration;
 static CCM_SRAM configuration_t temporary_configuration;
-static uint8_t workspace[CONFIGURATION_SLOT_SIZE];
+/* Flash DMA cannot access CCM or the Management task's CCM stack. */
+static uint8_t workspace[CONFIGURATION_WORKSPACE_SIZE] __attribute__((aligned(4)));
 static configuration_service_state_t service_state;
 static bool persisted_configuration_exists;
 static uint8_t persisted_slot;
@@ -276,7 +291,8 @@ static configuration_service_result_t read_slot(uint8_t slot_index, configuratio
     slot_info->valid = false;
     slot_info->generation = CONFIGURATION_GENERATION_FIRST;
 
-    if (external_flash_read(slot_address(slot_index), workspace, CONFIGURATION_SLOT_SIZE) != EXTERNAL_FLASH_RESULT_OK)
+    if (external_flash_read(slot_address(slot_index), workspace, CONFIGURATION_SLOT_HEADER_SIZE) !=
+        EXTERNAL_FLASH_RESULT_OK)
     {
         return CONFIGURATION_SERVICE_IO_ERROR;
     }
@@ -288,8 +304,18 @@ static configuration_service_result_t read_slot(uint8_t slot_index, configuratio
 
     if (read_u32_le(&workspace[0]) != CONFIGURATION_SLOT_MAGIC ||
         !generation_is_valid(slot_info->generation) || payload_length == 0U ||
-        payload_length > CONFIGURATION_SLOT_MAX_PAYLOAD_LENGTH || crc32(workspace, 16U) != header_crc ||
-        crc32(&workspace[CONFIGURATION_SLOT_HEADER_SIZE], payload_length) != payload_crc)
+        payload_length > CONFIGURATION_V2_MAX_PAYLOAD_LENGTH || crc32(workspace, 16U) != header_crc)
+    {
+        return CONFIGURATION_SERVICE_OK;
+    }
+
+    if (external_flash_read(slot_address(slot_index) + CONFIGURATION_SLOT_HEADER_SIZE,
+                            &workspace[CONFIGURATION_SLOT_HEADER_SIZE], payload_length) != EXTERNAL_FLASH_RESULT_OK)
+    {
+        return CONFIGURATION_SERVICE_IO_ERROR;
+    }
+
+    if (crc32(&workspace[CONFIGURATION_SLOT_HEADER_SIZE], payload_length) != payload_crc)
     {
         return CONFIGURATION_SERVICE_OK;
     }
@@ -352,12 +378,13 @@ static configuration_service_result_t load_configuration(void)
 static configuration_service_result_t write_slot(uint8_t slot_index, uint32_t generation, const uint8_t *payload,
                                                   uint32_t payload_length)
 {
+    /* CPU-only comparison copy: never pass this possibly CCM-backed stack buffer to DMA. */
     uint8_t expected_header[CONFIGURATION_SLOT_HEADER_SIZE];
     uint32_t address = slot_address(slot_index);
 
-    for (uint8_t sector_index = 0U; sector_index < 2U; sector_index++)
+    for (uint32_t sector_index = 0U; sector_index < CONFIGURATION_SLOT_SECTOR_COUNT; sector_index++)
     {
-        if (external_flash_erase_4k(address + (uint32_t)sector_index * CONFIGURATION_SECTOR_SIZE) !=
+        if (external_flash_erase_4k(address + sector_index * CONFIGURATION_SECTOR_SIZE) !=
             EXTERNAL_FLASH_RESULT_OK)
         {
             return CONFIGURATION_SERVICE_IO_ERROR;
@@ -383,7 +410,8 @@ static configuration_service_result_t write_slot(uint8_t slot_index, uint32_t ge
         return CONFIGURATION_SERVICE_IO_ERROR;
     }
 
-    if (external_flash_read(address, workspace, CONFIGURATION_SLOT_SIZE) != EXTERNAL_FLASH_RESULT_OK)
+    if (external_flash_read(address, workspace, CONFIGURATION_SLOT_HEADER_SIZE + payload_length) !=
+        EXTERNAL_FLASH_RESULT_OK)
     {
         return CONFIGURATION_SERVICE_IO_ERROR;
     }
@@ -571,7 +599,7 @@ configuration_service_result_t configuration_service_write(const uint8_t *payloa
     {
         return CONFIGURATION_SERVICE_NOT_INITIALIZED;
     }
-    if (payload == NULL || payload_length == 0U || payload_length > CONFIGURATION_V1_MAX_PAYLOAD_LENGTH)
+    if (payload == NULL || payload_length == 0U || payload_length > CONFIGURATION_V2_MAX_PAYLOAD_LENGTH)
     {
         return CONFIGURATION_SERVICE_INVALID_ARGUMENT;
     }

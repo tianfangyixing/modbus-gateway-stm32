@@ -6,7 +6,7 @@
 > `Configuration/src/configuration_service.c`
 
 本文档以函数为阐述对象，规定 Configuration Service 公开 API 的可观察行为、
-前置条件、参数和返回值，不规定 Flash 槽布局、持久化记录格式或内部实现方式。
+前置条件、参数和返回值，并约定 v2 Flash 分区、记录布局与 DMA 边界。
 
 ## 1. 模块概述
 
@@ -55,7 +55,9 @@ configuration_service_result_t configuration_service_init(void);
 
 首次调用时，函数从外部 Flash 加载最新的有效持久化配置作为 active 配置。
 损坏、不兼容或因内容无效而被解码器拒绝的持久化数据不构成有效配置；
-如果没有任何有效的持久化配置，函数使用当前固件的默认配置。
+如果没有任何有效的 v2 持久化配置，函数使用当前固件的默认配置（MQTT 禁用）。
+只接受 schema `0x02`；不读取旧 v1 槽地址、不迁移旧记录、不自动全片擦除。
+即使只有旧 v1 记录，初始化成功后也只会得到默认配置。
 
 初始化成功后再次调用为幂等操作：函数直接返回成功，不再访问外部 Flash，
 也不改变 active 配置。
@@ -130,7 +132,7 @@ configuration_service_result_t configuration_service_write(const uint8_t *payloa
 
 提交失败时，提交前可启动的配置状态仍保持可恢复；如果此前没有有效持久化配置，
 后续启动仍可使用固件默认配置。服务在写入失败后仍可继续使用。
-如果错误发生在新载荷写入后的回读校验阶段，返回 `CONFIGURATION_SERVICE_IO_ERROR`
+如果错误发生在最终 magic 编程或新载荷写入后的回读校验阶段，返回 `CONFIGURATION_SERVICE_IO_ERROR`
 不能用于判定新载荷是否已完成提交；后续系统启动仍可能加载该载荷。
 
 **前置条件**
@@ -141,11 +143,12 @@ configuration_service_result_t configuration_service_write(const uint8_t *payloa
 
 **参数**
 
-- `payload`：待持久化载荷的起始地址，不得为 `NULL`；该缓冲区必须完整位于 DMA 可访问的 SRAM 中，
-  在函数返回前必须保持可读，并至少包含 `payload_length` 字节。载荷必须符合
-  [Configuration Binary Codec API 与 Schema v1 规范](configuration_binary.md)，且解码后的配置模型必须有效。
+- `payload`：待持久化载荷的起始地址，不得为 `NULL`；该缓冲区至少包含 `payload_length` 字节，
+  调用期间内容必须稳定且 CPU 可读，不得与 Service 内部 workspace 重叠；允许位于 CCM。
+  Service 通过 CPU 复制后才调用 Flash DMA，调用方无需为此增加完整配置副本。载荷必须符合
+  [Configuration Binary Codec API 与 Schema v2 规范](configuration_binary.md)，且解码后的配置模型必须有效。
 - `payload_length`：载荷长度，单位为字节，必须位于
-  `1..CONFIGURATION_V1_MAX_PAYLOAD_LENGTH` 闭区间内。
+  `1..CONFIGURATION_V2_MAX_PAYLOAD_LENGTH` 闭区间内。
 
 **返回值**
 
@@ -155,3 +158,46 @@ configuration_service_result_t configuration_service_write(const uint8_t *payloa
 - `CONFIGURATION_SERVICE_RESOURCE_UNAVAILABLE`：校验载荷所需的临时资源不足；未访问外部 Flash。
 - `CONFIGURATION_SERVICE_IO_ERROR`：访问外部 Flash 失败，或持久化后的回读内容与载荷不一致。
 - `CONFIGURATION_SERVICE_INVALID_PAYLOAD`：载荷的 schema、二进制结构或配置模型无效；未访问外部 Flash。
+
+
+## 3. v2 持久化与内存约束
+
+外部 W25Q128 为 16 MiB；Service 独占最后 24 KiB。现有仓库业务代码只有 Service 使用外部 Flash；
+Bootloader 应用双槽位于内部 Flash，与本分区无关。
+
+| 项目 | 值 |
+|---|---|
+| 槽 A | `[0x00FFA000, 0x00FFD000)` |
+| 槽 B | `[0x00FFD000, 0x01000000)` |
+| 每槽容量 | 12288 字节，3 个 4096 字节扇区 |
+| 头长度 | 20 字节 |
+| 有效 payload 长度 | `1..8475`，仍须通过 schema v2 codec 和模型校验 |
+| 最大记录 / workspace | `20 + 8475 = 8495` 字节 |
+| magic | `0x32474643`，小端为 `43 46 47 32`（ASCII `CFG2`） |
+
+头字段依次为五个 u32 LE：magic、generation、payload_length、payload_crc32、header_crc32。
+payload CRC 覆盖实际 payload；头 CRC 覆盖头部前 16 字节，包含最终 CFG2 magic。
+CRC 使用 CRC-32/ISO-HDLC：多项式 `0x04C11DB7`（反射表示 `0xEDB88320`）、初值与最终异或均为
+`0xFFFFFFFF`、输入输出反射。未编码 NUL、数组余量与槽尾不参与 CRC。
+
+generation 仍为三值循环 `0 → 1 → 2 → 0`。只有 `0..2` 有效；有两个有效槽时，下一代槽胜出，
+相同 generation 时槽 B 胜出。首次提交写 A / generation 0，后续成功提交轮换槽并递增 generation。
+
+读取每槽时先读 20 字节头，验证 magic、generation、头 CRC 与长度；头无效时跳过该槽，
+不读 payload。头有效时只读实际 payload，再验证 payload CRC 与 codec。不能按物理槽余量
+放宽 8475 字节限制。底层 I/O 或解码资源失败仍导致初始化失败，不得将访问失败伪装成无有效配置。
+
+每次提交先完成参数、codec 与模型校验，然后按 `SLOT_SIZE / SECTOR_SIZE` 擦除目标槽的全部
+3 个扇区，旧有效槽不动。CPU 将 20 字节头及 payload 复制到 workspace；先编程 offset 4 起的
+头余部和 payload，最后单独编程 4 字节 magic。回读仅覆盖 `20 + payload_length` 字节，并逐字节
+比较完整头与调用方保持稳定的 payload；成功后才更新本次运行期的持久化槽元信息。
+
+中途失败或断电留下无效新槽时，下一次正常启动仍加载旧有效 v2 槽；此前无有效槽则使用默认值。
+magic 实际完成后，即使驱动返回错误或回读失败，新槽也可能已有效，因此调用失败不能证明未提交。
+任何写入结果都不改变当前 active。写失败后的后续有效写入仍以最近确认成功的槽元信息选择目标，
+保留此前确认的有效槽。
+
+workspace 为 4 字节对齐的普通 SRAM 静态数组（8495 字节），不使用 `.ccmdata`。
+`external_flash_read()` / `external_flash_program()` 的每一个传入缓冲区都必须位于该 workspace 内。
+栈上只保留 20 字节预期头用于 CPU 比较，不向驱动传入该头；Management 任务栈和输入帧可位于 CCM。
+active 与临时模型仍位于 CCM，不把完整记录放到任务栈。实际 SRAM 放置须以固件链接 map 和板端 DMA 验证。
