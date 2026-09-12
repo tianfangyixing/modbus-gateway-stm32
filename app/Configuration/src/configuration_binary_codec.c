@@ -283,7 +283,7 @@ configuration_binary_codec_result_t configuration_binary_decode(const uint8_t *p
         return CONFIGURATION_BINARY_CODEC_INVALID_ARGUMENT;
     }
 
-    if (payload_length == 0U || payload_length > CONFIGURATION_V1_MAX_PAYLOAD_LENGTH)
+    if (payload_length == 0U || payload_length > CONFIGURATION_V2_MAX_PAYLOAD_LENGTH)
     {
         return CONFIGURATION_BINARY_CODEC_PAYLOAD_LENGTH_INVALID;
     }
@@ -519,7 +519,7 @@ configuration_binary_codec_result_t configuration_binary_encode(const configurat
     }
 
     *payload_length = (uint32_t)(writer.current - writer.begin);
-    if (*payload_length == 0U || *payload_length > CONFIGURATION_V1_MAX_PAYLOAD_LENGTH)
+    if (*payload_length == 0U || *payload_length > CONFIGURATION_V2_MAX_PAYLOAD_LENGTH)
     {
         *payload_length = 0U;
         return CONFIGURATION_BINARY_CODEC_MODEL_INVALID;

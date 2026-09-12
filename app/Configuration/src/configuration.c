@@ -326,7 +326,9 @@ static bool client_id_is_valid(const configuration_client_id_t *client_id)
 
     for (index = 0U; index < client_id->explicit_value.length; index++)
     {
-        if (!ascii_is_alphanumeric(client_id->explicit_value.bytes[index]))
+        uint8_t value = client_id->explicit_value.bytes[index];
+
+        if (!ascii_is_alphanumeric(value) && value != (uint8_t)'_' && value != (uint8_t)'-')
         {
             return false;
         }

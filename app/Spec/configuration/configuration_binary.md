@@ -1,8 +1,8 @@
-# Configuration Binary Codec API 与 Schema v1 规范
+# Configuration Binary Codec API 与 Schema v2 规范
 
 > 状态：目标契约（normative）
 >
-> 本文档是 `configuration_binary_decode()`、`configuration_binary_encode()` 以及 Schema v1
+> 本文档是 `configuration_binary_decode()`、`configuration_binary_encode()` 以及 Schema v2
 > 字节格式的规范来源，可以直接用于派生黑盒测试。实现代码可用于定位缺陷，但不构成测试判据。
 
 ## API 契约
@@ -14,7 +14,7 @@
 - `configuration_binary_decode()`
 - `configuration_binary_encode()`
 
-本文档同时规定两个 API 读写的 Schema v1 payload。配置模型的业务有效性由
+本文档同时规定两个 API 读写的 Schema v2 payload。配置模型的业务有效性由
 [Configuration API 规范](configuration.md)中的 `configuration_validate()` 契约定义，本文件只规定
 codec 如何使用和映射该校验结果。
 
@@ -29,8 +29,9 @@ codec 如何使用和映射该校验结果。
 - `decode` 不得修改输入 payload，`encode` 不得修改输入 configuration。
 - 当一次调用同时违反多个条件时，本 API 不保证错误检查的优先级。黑盒测试应每次只构造一个独立错误，
   不得依赖内部检查顺序。
-- Schema v1 的规范编码是唯一且稳定的。已经由本文档定义的 Schema v1 字节含义不得被后续实现静默
-  修改；未来新增 schema 时，兼容或迁移策略另行规定。
+- Schema v2 的规范编码是唯一且稳定的。已经由本文档定义的 Schema v2 字节含义不得被后续实现静默
+  修改。本实现只读写 v2，拒绝 v1 和其他未知 schema，不提供迁移或 v1 回退。
+- 没有有效 v2 持久配置时，由 Configuration Service 加载默认配置（MQTT 禁用）；需重新下发 v2 配置。
 
 ### 3. `configuration_binary_decode()`
 
@@ -46,22 +47,22 @@ configuration_binary_codec_result_t configuration_binary_decode(const uint8_t *p
 - `configuration` 指向一个完整、可写的 `configuration_t` 对象。
 - `payload == NULL` 或 `configuration == NULL` 时，函数返回
   `CONFIGURATION_BINARY_CODEC_INVALID_ARGUMENT`。
-- `payload_length == 0` 或 `payload_length > CONFIGURATION_V1_MAX_PAYLOAD_LENGTH` 时，函数返回
+- `payload_length == 0` 或 `payload_length > CONFIGURATION_V2_MAX_PAYLOAD_LENGTH` 时，函数返回
   `CONFIGURATION_BINARY_CODEC_PAYLOAD_LENGTH_INVALID`。
-- 非零但小于最短完整 Schema v1 payload 的输入不是长度参数错误；当其 schema 版本可识别但字段不完整
+- 非零但小于最短完整 Schema v2 payload 的输入不是长度参数错误；当其 schema 版本可识别但字段不完整
   时，函数返回 `CONFIGURATION_BINARY_CODEC_MALFORMED`。
 
 #### 3.2 成功行为
 
 解码分为以下两个可观察阶段：
 
-1. 按“Schema v1 二进制格式”解析 payload。所有字段必须完整，条件分支值必须受支持，并且解析必须恰好
+1. 按“Schema v2 二进制格式”解析 payload。所有字段必须完整，条件分支值必须受支持，并且解析必须恰好
    消费 `payload_length` 个字节；字段缺失或存在尾随字节均为 malformed。
 2. 结构解析成功后，调用 `configuration_validate()` 检查配置模型。
 
 这里的“条件分支值”特指决定后续字段是否存在或采用哪种布局的判别值，包括 `network.mode`、Endpoint
 `type`、`mqtt.mode`、`client_id.mode`、MQTT message `mode` 和 collection point `source`。这些判别值
-非法时，解码器无法按 Schema v1 唯一确定后续布局，因此返回 `CONFIGURATION_BINARY_CODEC_MALFORMED`。
+非法时，解码器无法按 Schema v2 唯一确定后续布局，因此返回 `CONFIGURATION_BINARY_CODEC_MALFORMED`。
 `schema_version` 例外：不支持的版本返回 `CONFIGURATION_BINARY_CODEC_SCHEMA_UNSUPPORTED`。
 
 固定宽度且不改变后续布局的值在结构阶段按原始字节解码，再由配置模型校验。例如不受支持的
@@ -91,10 +92,10 @@ collection point `qos`，均在结构完整时返回 `CONFIGURATION_BINARY_CODEC
 
 | 结果 | 条件 |
 |---|---|
-| `CONFIGURATION_BINARY_CODEC_OK` | Schema v1 结构完整、恰好消费整个 payload，且模型校验成功 |
+| `CONFIGURATION_BINARY_CODEC_OK` | Schema v2 结构完整、恰好消费整个 payload，且模型校验成功 |
 | `CONFIGURATION_BINARY_CODEC_INVALID_ARGUMENT` | `payload` 或 `configuration` 为空 |
-| `CONFIGURATION_BINARY_CODEC_PAYLOAD_LENGTH_INVALID` | `payload_length` 为 0 或大于 7826 |
-| `CONFIGURATION_BINARY_CODEC_SCHEMA_UNSUPPORTED` | payload 的 schema 版本不是 `0x01` |
+| `CONFIGURATION_BINARY_CODEC_PAYLOAD_LENGTH_INVALID` | `payload_length` 为 0 或大于 8475 |
+| `CONFIGURATION_BINARY_CODEC_SCHEMA_UNSUPPORTED` | payload 的 schema 版本不是 `0x02` |
 | `CONFIGURATION_BINARY_CODEC_MALFORMED` | 字段缺失、条件分支值非法、文本长度越界、采集点过多或存在尾随字节 |
 | `CONFIGURATION_BINARY_CODEC_MODEL_INVALID` | 结构解析成功，但模型校验返回除资源不足以外的非成功结果 |
 | `CONFIGURATION_BINARY_CODEC_RESOURCE_UNAVAILABLE` | 模型校验返回 `CONFIGURATION_VALIDATION_RESOURCE_UNAVAILABLE` |
@@ -132,14 +133,14 @@ configuration_binary_codec_result_t configuration_binary_encode(const configurat
 
 #### 4.2 成功行为
 
-函数按“Schema v1 二进制格式”生成唯一的规范编码。成功返回时：
+函数按“Schema v2 二进制格式”生成唯一的规范编码。成功返回时：
 
 - 结果为 `CONFIGURATION_BINARY_CODEC_OK`。
 - `*payload_length` 是实际编码长度，范围为 21 至
-  `CONFIGURATION_V1_MAX_PAYLOAD_LENGTH`。
+  `CONFIGURATION_V2_MAX_PAYLOAD_LENGTH`。
 - `payload[0]` 至 `payload[*payload_length - 1]` 包含完整 payload。
 - `payload_capacity` 恰好等于所需长度时也必须成功；容量可以大于
-  `CONFIGURATION_V1_MAX_PAYLOAD_LENGTH`。
+  `CONFIGURATION_V2_MAX_PAYLOAD_LENGTH`。
 - 不生效的条件字段和索引大于或等于 `point_count` 的采集点不参与编码，其内容不影响输出。
 - 对相同的生效字段值，函数必须生成完全相同的 payload。
 - 当 `*payload_length < payload_capacity` 时，`payload[*payload_length]` 至
@@ -175,14 +176,14 @@ configuration_binary_codec_result_t configuration_binary_encode(const configurat
   重入且可并发调用。
 - 本规范不承诺中断执行时间上限，也不将可重入保证扩展为 ISR 实时适用性保证。
 
-## Schema v1 二进制格式
+## Schema v2 二进制格式
 
 本节只定义 codec payload，不包含 API 的参数检查、失败后输出状态或执行上下文。
 
 ### 1. 总体约定
 
 - payload 是紧凑的顺序编码，不是 `configuration_t` 的内存镜像；结构体 padding 不会写入。
-- 第一个字节固定为 schema 版本。当前唯一支持的版本是 `0x01`。
+- 第一个字节固定为 schema 版本。当前唯一支持的版本是 `0x02`。
 - `u16` 和 `u32` 均按小端字节序编码。
 - 字段之间没有对齐字节或 padding。
 - payload 自身不包含总长度、结束标记、magic 或 CRC；总长度由 API 的 `payload_length` 参数提供。
@@ -209,7 +210,7 @@ configuration_binary_codec_result_t configuration_binary_encode(const configurat
 
 | 顺序 | 字段或块 | 编码 | 出现条件 |
 |---:|---|---|---|
-| 1 | `schema_version` | `u8`，固定为 `0x01` | 始终 |
+| 1 | `schema_version` | `u8`，固定为 `0x02` | 始终 |
 | 2 | `network` | [Network 块](#3-network-块) | 始终 |
 | 3 | `rtu` | [RTU 块](#4-rtu-块) | 始终 |
 | 4 | `modbus_tcp` | [Modbus TCP 块](#5-modbus-tcp-块) | 始终 |
@@ -221,7 +222,7 @@ configuration_binary_codec_result_t configuration_binary_encode(const configurat
 等价的结构表示如下：
 
 ```text
-payload_v1 =
+payload_v2 =
     u8                 schema_version
     network_block      network
     rtu_block          rtu
@@ -290,8 +291,8 @@ HOSTNAME Endpoint 长度为 `3 + N` 字节，IPV4 Endpoint 固定为 5 字节。
 | 2 | `mqtt.broker_address` | `text(N)` | `1 <= N <= 253` | `mode == 1` |
 | 3 | `mqtt.broker_port` | `u16` | 2 字节 | `mode == 1` |
 | 4 | `mqtt.client_id` | [Client ID 块](#71-client-id-块) | 可变 | `mode == 1` |
-| 5 | `mqtt.username` | `text(N)` | `1 <= N <= 32` | `mode == 1` |
-| 6 | `mqtt.password` | `text(N)` | `1 <= N <= 64` | `mode == 1` |
+| 5 | `mqtt.username` | `text(N)` | `1 <= N <= 256` | `mode == 1` |
+| 6 | `mqtt.password` | `text(N)` | `1 <= N <= 256` | `mode == 1` |
 | 7 | `mqtt.ca_certificate_pem` | `text(N)` | `1 <= N <= 4096` | `mode == 1` |
 | 8 | `mqtt.keep_alive_seconds` | `u16` | 2 字节 | `mode == 1` |
 | 9 | `mqtt.online_message` | [MQTT 消息块](#72-mqtt-消息块) | 可变 | `mode == 1` |
@@ -304,7 +305,7 @@ DISABLED MQTT 块只包含 `mqtt.mode`，长度为 1 字节。其他 `mode` 值�
 | 顺序 | 字段 | 编码 | 取值或长度 | 出现条件 |
 |---:|---|---|---|---|
 | 1 | `client_id.mode` | `u8` | `0` = DERIVED，`1` = EXPLICIT | 始终 |
-| 2 | `client_id.explicit_value` | `text(N)` | `1 <= N <= 23` | `mode == 1` |
+| 2 | `client_id.explicit_value` | `text(N)` | `1 <= N <= 256` | `mode == 1` |
 
 DERIVED 块长度为 1 字节；EXPLICIT 块长度为 `3 + N` 字节。其他 `mode` 值不是合法编码。
 
@@ -359,7 +360,7 @@ INPUT_REGISTER Point 块长度为 `14 + topic_length` 字节。其他 `source` �
 
 ### 9. 长度边界
 
-Schema v1 payload 最大长度为 `7826` 字节，且该长度包含开头的 schema 版本字节。最大长度由所有可变项
+Schema v2 payload 最大长度为 `8475` 字节，且该长度包含开头的 schema 版本字节。最大长度由所有可变项
 取最大分支和最大长度得到：
 
 | 部分 | 最大字节数 | 计算方式 |
@@ -369,9 +370,9 @@ Schema v1 payload 最大长度为 `7826` 字节，且该长度包含开头的 sc
 | RTU | 7 | `u32 + u8 + u16` |
 | Modbus TCP | 2 | `u16` |
 | SNTP | 512 | 两个最大 hostname Endpoint：`2 * (1 + 2 + 253)` |
-| MQTT | 5010 | ENABLED、最大文本、显式 Client ID、两条最大 CUSTOM 消息 |
+| MQTT | 5659 | ENABLED、最大文本、显式 Client ID、两条最大 CUSTOM 消息 |
 | Collection | 2273 | `1 + 16 * 142`，16 个最大寄存器采集点 |
-| **合计** | **7826** | `CONFIGURATION_V1_MAX_PAYLOAD_LENGTH` |
+| **合计** | **8475** | `CONFIGURATION_V2_MAX_PAYLOAD_LENGTH` |
 
 最短的结构完整 payload 为 21 字节：使用 DHCP、两个长度为 1 的 HOSTNAME Endpoint、禁用 MQTT，且
 采集点数量为 0。结构完整不代表字段值一定通过配置模型校验。
@@ -389,3 +390,22 @@ Schema v1 payload 最大长度为 `7826` 字节，且该长度包含开头的 sc
 + 1                                    point_count = 0
 = 48
 ```
+
+默认固定向量（48 字节，独立按上述字段表给出）：
+
+```text
+02 00 80 25 00 00 03 E8 03 F6 01 00 0E 00 6E 74
+70 2E 61 6C 69 79 75 6E 2E 63 6F 6D 00 0F 00 6E
+74 70 2E 74 65 6E 63 65 6E 74 2E 63 6F 6D 00 00
+```
+
+MQTT 最大块为 `1 + 255 + 2 + 259 + 258 + 258 + 4098 + 2 + 263 + 263 = 5659`。
+三个认证字段长度为 256 时，其 u16 长度字节为 `00 01`。hostname 数组的 256 字节容量、
+所有 NUL 哨兵和余量均不编码。253 字节合法 hostname 解码后，`bytes[253..255]` 全为零。
+
+最大夹具必须同时满足模型规则：例如使用三个不同的 253 字节 hostname（标签长度
+`63 + 63 + 63 + 61`，三个分隔点），单张真实自签名根 CA 的 PEM 文本扩展至 4096 字节，
+以及 16 个唯一 128 字节 topic 的寄存器采集点。PEM 长度扩展可使用证书结束标记后的换行，
+不得填入第二张证书或内嵌 NUL。使用 115200 bit/s、8N1 和每点 1000 ms 时，
+每点估算为 `2 * 1750 + ceil(15 * 10 * 1000000 / 115200) = 4803` 微秒每秒，
+合计 `76848` 微秒每秒（7.6848%），低于 50%。测试必须实际验证证书与整个模型。

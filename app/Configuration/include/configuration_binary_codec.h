@@ -18,14 +18,14 @@ typedef enum
 } configuration_binary_codec_result_t;
 
 /**
- * @brief 将 Schema v1 二进制 payload 解码为配置。
+ * @brief 将 Schema v2 二进制 payload 解码为配置。
  * @param payload 待解码的 payload。指向至少 payload_length 个可读字节，不得为 NULL。
  * @param payload_length payload 长度，单位为字节。
  * @param configuration 接收解码结果的配置。不得为 NULL；解码失败时内容未定义。
  * @retval CONFIGURATION_BINARY_CODEC_OK 解码成功，且配置模型校验通过。
  * @retval CONFIGURATION_BINARY_CODEC_INVALID_ARGUMENT payload 或 configuration 为 NULL。
  * @retval CONFIGURATION_BINARY_CODEC_SCHEMA_UNSUPPORTED payload 中的 Schema 版本不受支持。
- * @retval CONFIGURATION_BINARY_CODEC_PAYLOAD_LENGTH_INVALID payload_length 为 0 或超过 Schema v1 最大长度。
+ * @retval CONFIGURATION_BINARY_CODEC_PAYLOAD_LENGTH_INVALID payload_length 为 0 或超过 Schema v2 最大长度。
  * @retval CONFIGURATION_BINARY_CODEC_MALFORMED payload 结构不完整、字段格式无效或存在尾随字节。
  * @retval CONFIGURATION_BINARY_CODEC_MODEL_INVALID payload 结构有效，但解码后的配置模型无效。
  * @retval CONFIGURATION_BINARY_CODEC_RESOURCE_UNAVAILABLE 校验解码后配置所需的内存资源不可用。
@@ -34,7 +34,7 @@ configuration_binary_codec_result_t configuration_binary_decode(const uint8_t *p
                                                                   configuration_t *configuration);
 
 /**
- * @brief 将有效配置编码为以 CONFIGURATION_SCHEMA_VERSION 开头的 Schema v1 二进制 payload。
+ * @brief 将有效配置编码为以 CONFIGURATION_SCHEMA_VERSION 开头的 Schema v2 二进制 payload。
  * @param configuration 待编码的配置。不得为 NULL，且必须通过 configuration_validate() 校验。
  * @param payload 接收编码结果的缓冲区。指向至少 payload_capacity 个可写字节，不得为 NULL。
  * @param payload_capacity payload 缓冲区容量，单位为字节。

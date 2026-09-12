@@ -1,4 +1,4 @@
-# Configuration API 规范
+# Configuration v2 API 规范
 
 > 状态：已批准，可用于派生黑盒测试
 >
@@ -81,7 +81,11 @@
 
 对所有生效的 hostname、client ID、用户名、密码、证书、topic 和 payload：
 
-- `length` 表示内容的字节数，而不是 Unicode 字符数。
+- `length` 表示内容的字节数，而不是 Unicode 字符数，不包含结尾 NUL；类型保持 `uint16_t`。
+- hostname 内容上限为 253 字节，数组容量为 `CONFIGURATION_HOSTNAME_BUFFER_SIZE = 256`；
+  ClientId、Username 和 Password 内容上限均为 256 字节，各数组容量为 257 字节。
+- 超长内容直接拒绝，不截断。必须先检查 length 范围，再读取 `bytes[length]`。
+  hostname 的 `bytes[254]` 和 `bytes[255]` 只是余量，不扩大输入上限。
 - 当 `length > 0` 时，有效内容位于 `bytes[0]` 至 `bytes[length - 1]`，并且
   `bytes[length]` 必须为 NUL `0`。
 - 位于有效内容和 NUL 哨兵之后的数组元素不参与校验。
@@ -210,14 +214,18 @@ MQTT 启用时，用户名、密码和 CA 证书均为必填项。Configuration 
 - `CONFIGURATION_CLIENT_ID_MODE_EXPLICIT`
 
 派生模式下，显式 client ID 字段不参与校验，且派生 ID 的生成方式不属于本 API 的职责。显式模式下，
-client ID 长度必须为 `1～23` 字节，并且只允许 ASCII 字母和数字。
+client ID 长度必须为 `1～256` 字节，并且只允许 ASCII `[A-Za-z0-9_-]`。
 
 认证字段必须满足以下规则：
 
-- `username` 长度为 `1～32` 字节，只允许可打印 ASCII `0x20～0x7E`；允许空格，但控制字符和
+- `username` 长度为 `1～256` 字节，只允许可打印 ASCII `0x20～0x7E`；允许空格，但控制字符和
   非 ASCII 字符无效。
-- `password` 长度为 `1～64` 字节，只允许可打印 ASCII `0x20～0x7E`；允许空格，但控制字符和
+- `password` 长度为 `1～256` 字节，只允许可打印 ASCII `0x20～0x7E`；允许空格，但控制字符和
   非 ASCII 字符无效。
+
+以上是通用配置能力。当前云接入的设备 ID 最多 128 字符、显式 ClientId 最长 143 字符、
+Password 为 64 位小写十六进制串，均由接入配置生成端约束；不缩小通用容量，不要求
+Username 等于设备 ID，也不在 STM32 新增 HMAC 或时间戳刷新功能。
 
 `mqtt.keep_alive_seconds` 必须位于 `30～3600` 秒闭区间内。
 
