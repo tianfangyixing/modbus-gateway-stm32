@@ -104,6 +104,8 @@ static int mqtt_tls_ssl_handshake(mbedtls_ssl_context *ssl)
     return 0;
 }
 
+/* Host policy tests retain real Mbed TLS and isolate the ALTCP network boundary. */
+#if !defined(MQTT_TLS_POLICY_TEST)
 #define mbedtls_ssl_conf_authmode mqtt_tls_ssl_conf_authmode
 #define mbedtls_ssl_setup mqtt_tls_ssl_setup
 #define mbedtls_ssl_handshake mqtt_tls_ssl_handshake
@@ -113,3 +115,5 @@ static int mqtt_tls_ssl_handshake(mbedtls_ssl_context *ssl)
 #undef mbedtls_ssl_handshake
 #undef mbedtls_ssl_setup
 #undef mbedtls_ssl_conf_authmode
+
+#endif

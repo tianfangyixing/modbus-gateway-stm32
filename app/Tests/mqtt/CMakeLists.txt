@@ -1,0 +1,36 @@
+cmake_minimum_required(VERSION 3.20)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    project(mqtt_v2_tests C)
+    enable_testing()
+    add_subdirectory(../common common)
+endif()
+get_filename_component(MQTT_APP "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
+set(MQTT_LWIP "${MQTT_APP}/Middlewares/Third_Party/LwIP/src")
+add_executable(mqtt_v2_path mqtt_v2_path.c
+    "${MQTT_LWIP}/apps/mqtt/mqtt.c" "${MQTT_LWIP}/core/def.c")
+target_link_libraries(mqtt_v2_path PRIVATE configuration_test_fixtures)
+target_include_directories(mqtt_v2_path BEFORE PRIVATE include "${MQTT_APP}/LWIP/Target"
+    "${MQTT_LWIP}/include" "${MQTT_APP}/MQTT/include" "${MQTT_APP}/SNTP/include")
+target_compile_features(mqtt_v2_path PRIVATE c_std_99)
+add_executable(mqtt_v2_tls mqtt_v2_tls.c)
+target_link_libraries(mqtt_v2_tls PRIVATE configuration_test_mbedtls)
+target_include_directories(mqtt_v2_tls BEFORE PRIVATE include "${MQTT_APP}/LWIP/Target"
+    "${MQTT_LWIP}/include" "${MQTT_APP}/MQTT/include" "${MQTT_APP}/SNTP/include"
+    "${MQTT_APP}/Configuration/include")
+target_compile_features(mqtt_v2_tls PRIVATE c_std_99)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    foreach(target mqtt_v2_path mqtt_v2_tls)
+        target_compile_options(${target} PRIVATE -ffunction-sections -fdata-sections -Wall -Wextra -UNDEBUG)
+        target_link_options(${target} PRIVATE -Wl,--gc-sections)
+    endforeach()
+endif()
+add_test(NAME mqtt_v2_maximum_connect COMMAND mqtt_v2_path explicit "${CMAKE_CURRENT_BINARY_DIR}/connect.bin")
+add_test(NAME mqtt_v2_derived_client_id COMMAND mqtt_v2_path derived "${CMAKE_CURRENT_BINARY_DIR}/derived.bin")
+add_test(NAME mqtt_v2_hostname_tls COMMAND mqtt_v2_tls)
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+add_test(NAME mqtt_v2_wire_oracle COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/verify_connect.py" --executable "$<TARGET_FILE:mqtt_v2_path>")
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    add_test(NAME mqtt_v2_capacity_guards COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/verify_capacity.py" --compiler "${CMAKE_C_COMPILER}")
+endif()

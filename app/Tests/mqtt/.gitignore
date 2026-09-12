@@ -1,0 +1,3 @@
+/build/
+*.arm.s
+__pycache__/
