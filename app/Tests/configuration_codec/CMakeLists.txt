@@ -1,0 +1,6 @@
+add_executable(configuration_codec_tests test_configuration_codec.c)
+target_link_libraries(configuration_codec_tests PRIVATE configuration_test_fixtures unity)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(configuration_codec_tests PRIVATE -Wall -Wextra -Werror -Wpedantic)
+endif()
+add_test(NAME configuration_codec COMMAND configuration_codec_tests)
