@@ -63,6 +63,7 @@ const char *mqtt_publisher_test_client_id_from_uid(uint32_t uid_word0, uint32_t 
 #else
 
 #include "configuration_service.h"
+#include "mqtt_capacity.h"
 #include "mqtt_tls_policy.h"
 
 #include "FreeRTOS.h"

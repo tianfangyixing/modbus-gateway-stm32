@@ -1,4 +1,5 @@
 #include "mqtt_tls_policy.h"
+#include "configuration.h"
 
 #include "mbedtls/ssl.h"
 #include "mbedtls/x509.h"
@@ -25,6 +26,9 @@
 
 static const char *mqtt_tls_broker_hostname;
 
+typedef char mqtt_tls_hostname_capacity[
+    (MBEDTLS_SSL_MAX_HOST_NAME_LEN >= CONFIGURATION_HOSTNAME_MAX_LENGTH) ? 1 : -1];
+
 bool mqtt_tls_policy_set_broker_hostname(const char *broker_hostname)
 {
     size_t length;
@@ -35,7 +39,7 @@ bool mqtt_tls_policy_set_broker_hostname(const char *broker_hostname)
     }
 
     length = strlen(broker_hostname);
-    if (length == 0U || length > 253U)
+    if (length == 0U || length > CONFIGURATION_HOSTNAME_MAX_LENGTH)
     {
         return false;
     }

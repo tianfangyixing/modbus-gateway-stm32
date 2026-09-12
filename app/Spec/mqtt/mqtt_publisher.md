@@ -95,6 +95,25 @@ Publisher 只保存 active MQTT 配置的只读指针，LwIP、TLS、will 和 on
 建立第二份 runtime config，也不得复制配置后接受运行期替换。派生 Client ID 使用 Publisher 自有固定缓冲区，
 其余指向配置字节的指针在 Publisher 运行期内均保持有效。
 
+## Configuration v2 字段容量
+
+只使用 schema `0x02` 的 active 配置。没有有效 v2 持久化记录时默认 MQTT 禁用；PUT 成功只影响下次启动，
+本次 Publisher 继续使用原 active 配置。
+
+显式 ClientId、Username、Password 的内容上限均为 256 ASCII 字节，数组至少 257 字节。显式 ClientId
+允许 `[A-Za-z0-9_-]`；Username/Password 保留可打印 ASCII `0x20～0x7E`，包括空格和标点。Publisher
+直接传递已校验、正确 NUL 结尾的配置内容，不建立截断副本，不缩小通用配置容量。
+
+broker 与两路 SNTP 的 hostname 内容上限仍为 253，配置数组为 256，标签规则保持不变。DNS 的
+`DNS_MAX_NAME_LENGTH=256` 容纳内容和 NUL；TLS 的最大 hostname 容量必须至少为配置上限。
+`mqtt_capacity.h` 和项目 TLS 适配在编译期检查这些约束。SNTP 直接把两个 active hostname 指针交给
+`sntp_setservername()`，无需扩大独立缓存。TLS 通过真实 `mbedtls_ssl_set_hostname()` 保存完整 hostname，
+其内部动态副本包含 NUL；项目不新增 hostname 副本。
+
+当前云接入生成端的设备 ID 最多 128 字符、显式 ClientId 最长 143、Password 为 64 位小写十六进制，
+这些是接入生成端约束，不改变上述通用上限。固件不新增 HMAC 或时间戳生成，UID 派生模式保持原行为。
+容量测试使用可控的本地网络边界；云端另用符合其接入格式的凭据验证。
+
 ## 派生 Client ID
 
 DERIVED 模式必须读取 `HAL_GetUIDw0()`、`HAL_GetUIDw1()` 和 `HAL_GetUIDw2()`，按 w0、w1、w2 顺序把每个
@@ -164,25 +183,38 @@ Publisher 不拥有 Configuration Service 的配置内存。
 
 ## LwIP 输出环形缓冲要求
 
-按 Configuration 合法上限计算，MQTT 3.1.1 CONNECT 的 remaining length 最大为：
+按 Configuration v2 合法上限计算，MQTT 3.1.1 CONNECT 的 remaining length 最大为：
 
 ```text
 固定可变头                         10
-client ID              2 + 23 =   25
+client ID              2 + 256 =  258
 will topic/payload      2 + 128 + 2 + 128 = 260
-username                2 + 32 =   34
-password                2 + 64 =   66
-remaining length 合计             395
+username                2 + 256 =  258
+password                2 + 256 =  258
+remaining length 合计            1044
 固定头（类型 1 + 变长长度 2）       3
-CONNECT 总计                       398 bytes
+CONNECT 总计                      1047 bytes
 ```
+
+长度前缀是 MQTT 的 u16 **big-endian**，与配置 codec 的 little-endian 不同；结尾 NUL 不上线路。
+最大 remaining length 的线路编码为 `94 08`，完整 CONNECT 以 `10 94 08` 开始。
 
 受控通用 PUBLISH 以 topic 128、payload 128、QoS 1/2 的 packet ID 2 计算，remaining length 为
 `2 + 128 + 2 + 128 = 260`，加 3 字节固定头后为 263 bytes。QoS 0 更小。
 
-因此项目配置必须保证 `MQTT_OUTPUT_RINGBUF_SIZE >= 512`，以容纳任一最大合法 CONNECT 或 PUBLISH，并保留
-明确的 2 次幂容量。只能在项目自有 `lwipopts.h` 配置该值，禁止修改 `Middlewares/**`。4 个发布槽是并发上限，
-不是环形缓冲容量保证；LwIP 空间不足时当前提交返回 `NO_RESOURCE`，不得另建离线缓存。
+项目在 `lwipopts.h` USER CODE 区配置 `MQTT_OUTPUT_RINGBUF_SIZE=2048`；全部引用该选项的模块必须完整重编译。
+`mqtt_capacity.h` 从配置上限推导最大 CONNECT/PUBLISH 并做编译期检查：包必须严格小于 ring，避免 vendor
+读写索引相等时被识别为空；ring 索引运算必须适合 u16，will topic/payload 必须适合 vendor 的 u8 长度，
+CONNECT remaining length 必须适合 u16。2 次幂容量是项目选择。只扩大配置值，不修改 `Middlewares/**`。
+4 个发布槽是并发上限，不保证 ring 一定有空间；LwIP 空间不足时当前提交仍返回 `NO_RESOURCE`。
+
+ring 位于 `mqtt_client_t`，由 `mqtt_client_new()` 经 `mem_calloc()` 从 LwIP 的 40 KiB heap 分配。
+512→2048 使每个 client 动态占用增加 1536 字节；预留的静态 heap 数组大小保持不变。这不能通过静态 map
+剩余空间抵消，也不能通过 FreeRTOS 的独立 heap 剩余值判断。Mbed TLS 的 allocator 同样转接到 LwIP heap，
+TLS 输入/输出内容缓冲配置为 6144/2048，实际分配还含协议开销、context、证书链和握手临时对象。
+验收必须观测 TLS 握手及反复重连时 LwIP heap 峰值、最大连续空闲块/分配失败，以及 MQTT/TCPIP 等任务栈水位。
+静态链接通过或主机 TLS setup 通过均不代表板端 TLS 内存足够。细节见
+[MQTT v2 实施报告](../implementation_reports/mqtt_v2.md)。
 
 ## 并发、所有权与失败
 

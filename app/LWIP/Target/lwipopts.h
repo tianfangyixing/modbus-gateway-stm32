@@ -53,7 +53,8 @@
 
 #define ALTCP_MBEDTLS_RNG_FN mbedtls_entropy_func
 
-#define MQTT_OUTPUT_RINGBUF_SIZE 512
+/* Sized for the Configuration v2 maximum 1047-byte CONNECT. */
+#define MQTT_OUTPUT_RINGBUF_SIZE 2048
 
 /* USER CODE END 0 */
 
