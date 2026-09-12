@@ -2,7 +2,7 @@
 
 > 本文是本仓库 Management Transport 线路协议、固件实现与主机测试的规范依据。
 > Configuration Payload 的格式见
-> [Configuration Binary Codec API 与 Schema v1 规范](../configuration/configuration_binary.md)。
+> [Configuration Binary Codec API 与 Schema v2 规范](../configuration/configuration_binary.md)。
 
 ## 1. 帧结构
 
@@ -21,15 +21,15 @@ Management Frame 是承载在 USB CDC 字节流上的二进制帧。所有多字
 | 0 | `magic` | 4 bytes | 固定 ASCII `MBGW`，十六进制为 `4D 42 47 57` |
 | 4 | `message_type` | `u8` | 请求或响应类型 |
 | 5 | `transaction_id` | `u32 LE` | 由主机生成；响应沿用请求 ID |
-| 9 | `payload_length` | `u32 LE` | payload 字节数，范围为 0～8192 |
+| 9 | `payload_length` | `u32 LE` | payload 字节数，范围为 0～8477 |
 | 13 | `payload` | N bytes | 具体格式由 `message_type` 决定 |
 | 13 + N | `crc32` | `u32 LE` | 覆盖从 `magic` 到 payload 末尾的全部字节 |
 
 - 固定头长度：13 字节。
 - 帧开销：17 字节，即固定头 13 字节加 CRC 4 字节。
 - 总帧长度：`17 + payload_length`。
-- 最大 payload：8192 字节。
-- 最大总帧长度：8209 字节。
+- 最大 payload：8477 字节。
+- 最大总帧长度：8494 字节。
 - 帧中没有 protocol version、flags、header CRC、分块序号或 USB packet ACK。
 
 ## 2. CRC32
@@ -100,7 +100,9 @@ CRC 使用 reflected CRC-32/ISO-HDLC，与 Ethernet 和 zlib CRC32 相同：
 0x81 payload = result_code:u16 LE | Configuration Payload
 ```
 
-Configuration Payload 是本次启动正在使用的 Active Configuration。失败响应仅包含 `result_code`。
+Configuration Payload 是本次启动正在使用的 Active Configuration，仅编码 schema `0x02`。
+最大配置为 8475 字节，加两字节结果码得到 8477 字节响应 payload，加 17 字节帧开销得到 8494 字节完整帧。
+PUT 成功后、重启之前，GET 返回的仍是旧 active。失败响应仅包含 `result_code`。
 
 ### 5.2 PUT_CONFIGURATION
 
@@ -117,6 +119,15 @@ Configuration Payload 是本次启动正在使用的 Active Configuration。失�
 ```
 
 `OK` 表示配置已经持久化并通过回读校验，但当前运行中的 Active Configuration 不会改变，也不会自动重启。
+下次启动才应用已持久化配置。只读写 schema `0x02`；不兼容或迁移 v1。升级后无有效 v2 持久化时使用默认配置
+（MQTT 禁用），需要重新下发 v2 配置。
+
+- 最大配置 payload 为 8475 字节，最大 PUT 完整帧为 `8475 + 17 = 8492` 字节。
+- 帧层允许 8477 字节 payload，因此 8476 或 8477 字节 PUT 属于合法帧中的非法配置：
+  Service 就绪时返回 `CONFIGURATION_INVALID(3)`，不擦除或编程 Flash。
+- 结构完整的 v1 PUT 由 codec 拒绝；Service 就绪时映射为 `CONFIGURATION_INVALID(3)`。
+  Service 未就绪时仍返回 `NOT_READY(6)`。
+- 声明 8478 字节及以上的 payload 在帧层静默丢弃，随后继续搜索合法帧。
 
 ### 5.3 GET_STATUS
 
@@ -188,7 +199,7 @@ disconnect 会取消尚未执行的重启。
 - USB CDC packet、callback 和 2048 字节 CDC buffer 都不是帧边界。
 - 一个 Management Frame 可以跨任意多个 USB packet；一个 packet 也可以包含多个连续帧。
 - parser 使用滚动 `MBGW` 匹配，允许 magic 跨 callback，并跳过 magic 前的噪声。
-- magic 错误、payload 超过 8192 字节、CRC 错误或帧未完成时，不执行命令，也不发送线路错误响应。
+- magic 错误、payload 超过 8477 字节、CRC 错误或帧未完成时，不执行命令，也不发送线路错误响应。
 - 超长声明或坏 CRC 后，parser 继续搜索后续合法 `MBGW` 帧。
 - session 结束时丢弃尚未完成的半帧。
 

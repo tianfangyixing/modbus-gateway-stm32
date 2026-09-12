@@ -25,8 +25,8 @@ python Management/tools/management_readonly_validation.py --port COM16 --rounds 
 | 逐字节拼接 | 17 次 write，每次 1 字节，间隔 10 ms | 重组后正常响应 |
 | 噪声前缀 | 70 字节非 magic 数据后紧接合法帧 | 跳过噪声，正常响应 |
 | 坏 CRC 后恢复 | 翻转 CRC 一位，观察 400 ms，再发合法帧 | 观察窗内不响应坏帧，后续查询成功 |
-| 超长声明后恢复 | 声明 payload 长度 8193 的帧头后紧接合法帧 | 丢弃超长声明，后续查询成功 |
-| 最大 payload | GET_STATUS 携带 8192 字节载荷，总帧长 8209 字节 | 完整拼接并校验后返回 INVALID_REQUEST |
+| 超长声明后恢复 | 声明 payload 长度 8478 的帧头后紧接合法帧 | 丢弃超长声明，后续查询成功 |
+| 最大 payload | GET_STATUS 携带 8477 字节载荷，总帧长 8494 字节 | 完整拼接并校验后返回 INVALID_REQUEST |
 | 大报文后的普通查询 | 合法空载荷 GET_STATUS | 状态查询恢复正常 |
 
 最大载荷场景预期返回错误码 1，因为 GET_STATUS 只接受空载荷。这一结果验证报文处理边界，不代表配置写入测试。

@@ -9,12 +9,9 @@ from pathlib import Path
 import struct
 import time
 
-import serial
-from serial.tools import list_ports
-
 from management_status_monitor import (
-    GET_STATUS, GET_STATUS_RESPONSE, MAGIC, ManagementFrameParser,
-    encode_management_frame, select_management_port,
+    GET_STATUS, GET_STATUS_RESPONSE, MAGIC, MAX_PAYLOAD_LENGTH, MAX_FRAME_LENGTH, ManagementFrameParser,
+    encode_management_frame, select_management_port, _load_pyserial,
 )
 
 
@@ -92,9 +89,9 @@ def exercise(cdc, parser, scenario, transaction_id, timeout, observation):
         if scenario == "noise_prefix_70_bytes":
             wire = b"\xa5" * 70 + valid
         elif scenario == "oversized_header_then_valid":
-            wire = MAGIC + bytes((GET_STATUS,)) + struct.pack("<II", transaction_id - 1, 8193) + valid
+            wire = MAGIC + bytes((GET_STATUS,)) + struct.pack("<II", transaction_id - 1, MAX_PAYLOAD_LENGTH + 1) + valid
         elif scenario == "maximum_payload_invalid_status":
-            wire = encode_management_frame(GET_STATUS, transaction_id, bytes(8192))
+            wire = encode_management_frame(GET_STATUS, transaction_id, bytes(MAX_PAYLOAD_LENGTH))
             expected_result = 1
         checked_write(cdc, wire)
         observation["sent_bytes"] += len(wire)
@@ -111,6 +108,7 @@ def exercise(cdc, parser, scenario, transaction_id, timeout, observation):
 
 
 def main():
+    serial, list_ports = _load_pyserial()
     argument_parser = argparse.ArgumentParser(description=__doc__)
     argument_parser.add_argument("--port")
     argument_parser.add_argument("--rounds", type=int, default=3)
@@ -134,7 +132,8 @@ def main():
         "rounds": args.rounds, "timeout_seconds": args.timeout, "scenarios": SCENARIOS,
         "commands": ["GET_STATUS (0x03)"], "firmware_changed": False, "device_reset_requested": False,
         "firmware_revision_verified": False,
-        "maximum_payload_case": "Valid 8192-byte frame payload with GET_STATUS; expects INVALID_REQUEST because GET_STATUS requires empty payload",
+        "maximum_payload_length": MAX_PAYLOAD_LENGTH, "maximum_frame_length": MAX_FRAME_LENGTH,
+        "maximum_payload_case": f"Valid {MAX_PAYLOAD_LENGTH}-byte frame payload with GET_STATUS; expects INVALID_REQUEST because GET_STATUS requires empty payload",
         "fragmentation_scope": "Separate host writes; no logic analyzer or USB packet capture",
         "tool_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     }
