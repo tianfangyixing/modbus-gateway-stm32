@@ -291,6 +291,7 @@
       </DebugDescription>
     </TargetOption>
   </Target>
+
   <Target>
     <TargetName>app_B</TargetName>
     <ToolsetNumber>0x4</ToolsetNumber>

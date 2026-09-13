@@ -64,3 +64,8 @@ todo.txt
 .em_skill.json
 
 artifacts/
+
+
+*.bin
+*.hex
+*.fu

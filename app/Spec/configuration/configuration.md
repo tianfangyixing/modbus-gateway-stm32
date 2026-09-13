@@ -236,7 +236,7 @@ Username 等于设备 ID，也不在 STM32 新增 HMAC 或时间戳刷新功能�
 
 消息禁用时，其 topic、payload、QoS 和 retain 不参与校验。CUSTOM 模式必须满足以下规则：
 
-- topic 长度为 `1～128` 字节，只允许 ASCII 字母、数字、`.`、`_`、`-` 和 `/`。
+- topic 长度为 `1～128` 字节，只允许 ASCII 字母、数字、`.`、`_`、`-`、`/` 和 `$`。
 - topic 不允许 MQTT 通配符 `+`、`#`，也不允许空格或非 ASCII 字符。
 - topic 允许空层级，包括 `/status`、`status/`、`a//b` 和 `/`。
 - payload 长度为 `1～128` 字节，必须是格式正确且不含内嵌 NUL 的 UTF-8；空 payload 无效。

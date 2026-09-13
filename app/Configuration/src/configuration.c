@@ -279,7 +279,7 @@ static bool topic_is_valid(const configuration_topic_t *topic)
         uint8_t value = topic->bytes[index];
 
         if (!ascii_is_alphanumeric(value) && value != (uint8_t)'.' && value != (uint8_t)'_' &&
-            value != (uint8_t)'-' && value != (uint8_t)'/')
+            value != (uint8_t)'-' && value != (uint8_t)'/' && value != (uint8_t)'$')
         {
             return false;
         }
